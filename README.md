@@ -33,17 +33,17 @@ The app centers on three connected concepts:
 
 1. Install dependencies.
 
-	```bash
-	npm install
-	```
+   ```bash
+   npm install
+   ```
 
 2. Create a local environment file from the template below.
 
 3. Run the development server.
 
-	```bash
-	npm run dev
-	```
+   ```bash
+   npm run dev
+   ```
 
 4. Open the app in your browser and sign in with Supabase-authenticated credentials.
 
