@@ -1,0 +1,19 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[functions]
+  included_files = [".next/**", "public/**"]
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"  # ✅ official plugin
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[build.secrets_scan]
+  ignore_env = [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
+  ]
