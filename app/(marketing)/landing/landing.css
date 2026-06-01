@@ -1,0 +1,139 @@
+/* =====================================================
+   Landing Root & Base
+   ===================================================== */
+.landing-root {
+  background: #0b0705; /* Deepest charcoal/black */
+  position: relative;
+  overflow: hidden; /* Important to contain the moving blobs */
+}
+
+/* =====================================================
+   Cinematic Noise Texture
+   (Adds film grain to prevent banding and add realism)
+   ===================================================== */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  opacity: 0.07;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* =====================================================
+   The Fluid Magma Engine
+   ===================================================== */
+.magma-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 50%, #1a100c 0%, #000000 100%);
+}
+
+.magma-blob {
+  position: absolute;
+  filter: blur(80px); /* The secret sauce for fluid looks */
+  opacity: 0.6;
+  border-radius: 50%;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: screen; /* Makes colors add up nicely */
+}
+
+/* Blob 1: The Core Heat (Intense Orange) */
+.blob-core {
+  top: 20%;
+  left: 30%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.8) 0%, rgba(220, 38, 38, 0) 70%);
+  animation: drift-slow 20s infinite alternate;
+}
+
+/* Blob 2: The Ember Wash (Soft Peach/Pink) */
+.blob-ember {
+  bottom: -10%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(255, 120, 70, 0.5) 0%, rgba(124, 45, 18, 0) 70%);
+  animation: drift-medium 15s infinite reverse;
+}
+
+/* Blob 3: The Deep Burn (Dark Red/Purple shadow) */
+.blob-burn {
+  bottom: 40%;
+  left: -10%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(circle, rgba(153, 27, 27, 0.6) 0%, rgba(0, 0, 0, 0) 70%);
+  animation: drift-fast 12s infinite linear;
+}
+
+/* =====================================================
+   Fluid Animations
+   ===================================================== */
+@keyframes drift-slow {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate(10%, -10%) rotate(10deg) scale(1.1); }
+  100% { transform: translate(-5%, 10%) rotate(-5deg) scale(0.95); }
+}
+
+@keyframes drift-medium {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 50px) scale(1.2); }
+  66% { transform: translate(30px, -20px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes drift-fast {
+  0% { transform: rotate(0deg) translate(0, 0); }
+  50% { transform: rotate(180deg) translate(50px, 50px); }
+  100% { transform: rotate(360deg) translate(0, 0); }
+}
+
+/* =====================================================
+   Vignette (The Finishing Touch)
+   ===================================================== */
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 40%,
+    rgba(11, 7, 5, 0.8) 100%
+  );
+}
+
+/* =====================================================
+   Entry & Element Animations (Preserved)
+   ===================================================== */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* =====================================================
+   Buttons & Cards (Preserved)
+   ===================================================== */
+.btn-primary {
+  @apply bg-orange-600 hover:bg-orange-500 text-white font-semibold rounded-xl px-7 py-3 shadow-[0_0_30px_-12px_rgba(234,88,12,0.5)] hover:shadow-[0_0_50px_-12px_rgba(234,88,12,0.7)] transition-all duration-300 hover:scale-[1.04];
+}
+
+.btn-ghost {
+  @apply border border-white/10 hover:border-white/30 text-white/90 rounded-xl px-7 py-3 bg-white/5 hover:bg-white/10 backdrop-blur-md transition-all duration-300;
+}
+
+.card {
+  @apply bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6 transition-all duration-300 hover:border-white/20 hover:bg-black/40;
+}

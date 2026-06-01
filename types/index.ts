@@ -7,6 +7,17 @@ export interface User {
   updated_at: string;
 }
 
+export interface Profile {
+  id: string;
+  email?: string;
+  username?: string;
+  full_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  phone?: string;
+  updated_at?: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -29,6 +40,8 @@ export interface Event {
   tags: string[];
   status: EventStatus;
   visibility: EventVisibility;
+  is_private: boolean;
+  require_approval: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -38,8 +51,8 @@ export interface EventAttendee {
   event_id: string;
   user_id: string;
   user?: User;
-  checked_in: boolean;
-  check_in_time?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  invite_id?: string;
   created_at: string;
 }
 
@@ -50,6 +63,31 @@ export interface EventInvite {
   status: 'pending' | 'accepted' | 'declined';
   created_at: string;
   email?: string | null;
+}
+
+export interface EventInviteLink {
+  id: string;
+  event_id: string;
+  token: string;
+  created_by: string;
+  is_single_use: boolean;
+  is_used: boolean;
+  used_by?: string;
+  used_at?: string;
+  expires_at?: string;
+  max_uses?: number;
+  current_uses: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JoinRequest {
+  id: string;
+  event_id: string;
+  user_id: string;
+  user?: User;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
 }
 
 export interface CheckIn {

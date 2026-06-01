@@ -20,7 +20,7 @@ export default function SplashProvider({ children }: { children: ReactNode }) {
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-orange-100/60 to-red-100/60 dark:from-[#0f0f0f] dark:to-[#1a1a1a]">
         <div className="text-center space-y-4 animate-fade-in-up px-6">
           <Image
-            src="/bonfire-logo.png"
+            src="/app/bonfire-logo.png"
             alt="Bonfire Logo"
             width={300}
             height={300}

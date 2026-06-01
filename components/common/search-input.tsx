@@ -11,13 +11,15 @@ interface SearchInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  inputClassName?: string;
 }
 
 export function SearchInput({ 
   value, 
   onChange, 
   placeholder = "Search events...",
-  className 
+  className,
+  inputClassName,
 }: SearchInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -33,8 +35,11 @@ export function SearchInput({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={cn(
-            "pl-10 pr-10 transition-all duration-200",
-            isFocused && "ring-2 ring-orange-500 border-orange-500"
+            // Premium dark-mode input styling
+            "pl-10 pr-10 transition-all duration-200 bg-slate-800/50 border border-white/10 rounded-xl h-12 text-slate-300 placeholder:text-slate-500",
+            // Focus: emphasize border without heavy ring
+            isFocused && "border-orange-500",
+            inputClassName
           )}
         />
         {value && (

@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { MapPin, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Type declarations for Google Maps
 declare global {
@@ -27,12 +28,13 @@ interface LocationAutocompleteProps {
   onLocationSelect?: (locationData: LocationData) => void;
   placeholder?: string;
   required?: boolean;
+  types?: string[];
 }
 
 // Global promise to manage single Google Maps load - prevents duplicate script loads
 let googleMapsLoadingPromise: Promise<void> | null = null;
 
-const loadGoogleMaps = (): Promise<void> => {
+export const loadGoogleMaps = (): Promise<void> => {
   // Return existing promise if already loading or loaded
   if (googleMapsLoadingPromise) {
     return googleMapsLoadingPromise;
@@ -90,10 +92,12 @@ export function LocationAutocomplete({
   onSelect,
   onLocationSelect,
   placeholder = "Enter event location",
-  required = false
+  required = false,
+  types = ['establishment', 'geocode']
 }: LocationAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
+  const initializedRef = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -103,17 +107,22 @@ export function LocationAutocomplete({
         await loadGoogleMaps();
 
         // Initialize autocomplete only once per component instance
+        if (initializedRef.current) {
+          setIsLoading(false);
+          return;
+        }
+
         if (inputRef.current && !autocompleteRef.current && (window as any).google?.maps?.places) {
           const autocomplete = new (window as any).google.maps.places.Autocomplete(
             inputRef.current,
             {
-              types: ['establishment', 'geocode'],
+              types,
               fields: ['place_id', 'name', 'formatted_address', 'geometry.location'],
-              componentRestrictions: { country: 'in' }, // Restrict to India, remove if global
             }
           );
 
           autocompleteRef.current = autocomplete;
+          initializedRef.current = true;
 
           autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
@@ -150,8 +159,11 @@ export function LocationAutocomplete({
     // Cleanup: don't remove the script since other components might use it
     return () => {
       // Component cleanup - preserve global script for reuse
+      // Reset instance flags for safety on unmount
+      autocompleteRef.current = null;
+      initializedRef.current = false;
     };
-  }, [onChange, onSelect, onLocationSelect]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="relative">

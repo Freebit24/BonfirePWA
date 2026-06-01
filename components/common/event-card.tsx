@@ -1,13 +1,13 @@
 'use client';
-
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { logger } from '@/lib/logger';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { Edit } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Event } from '@/types';
 import { formatDate, formatTime, getEventStatus, isEventUpcoming } from '@/utils/helpers';
 import { EVENT_CATEGORIES } from '@/utils/constants';
@@ -16,7 +16,6 @@ import {
   Clock, 
   Calendar, 
   Users, 
-  Heart,
   Share2,
   Lock
 } from 'lucide-react';
@@ -27,8 +26,14 @@ interface EventCardProps {
   onJoin?: () => void;
   onLeave?: () => void;
   onShare?: () => void;
+  onDelete?: () => void;
   isJoined?: boolean;
   className?: string;
+  showOrganizerActions?: boolean;
+  // NEW: distinguish between Home Feed and Organizer Dashboard
+  isDashboardView?: boolean;
+  // Optional explicit current user id; falls back to auth store user
+  currentUserId?: string | null;
 }
 
 export function EventCard({ 
@@ -36,12 +41,16 @@ export function EventCard({
   onJoin, 
   onLeave, 
   onShare, 
+  onDelete,
   isJoined = false,
-  className 
+  className,
+  showOrganizerActions = true,
+  isDashboardView = false,
+  currentUserId
 }: EventCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [isLiked, setIsLiked] = useState(false);
+  // removed favourite state/button to avoid duplicates and overlap
   const category = EVENT_CATEGORIES.find(cat => cat.value === event.category);
   const status = getEventStatus(event);
   const canJoin = event.status === 'active' && isEventUpcoming(
@@ -50,181 +59,176 @@ export function EventCard({
     event.end_date,
     event.end_time
   );
+  const effectiveUserId = currentUserId ?? user?.id ?? null;
+  const isOrganizer = !!effectiveUserId && effectiveUserId === event.organizer_id;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={cn("w-full", className)}
-    >
+    <div className={cn("w-full h-full", className)}>
       <Card className={cn(
-        "overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300",
-        event.visibility === 'private' 
-          ? "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-2 border-purple-300 dark:border-purple-600" 
-          : "border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800"
+        "overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-white/20 h-full flex flex-col border",
+        event.visibility === 'private'
+          ? "border-fuchsia-500/40 bg-gradient-to-br from-purple-950 to-indigo-900"
+          : "border-white/10 bg-gradient-to-br from-neutral-900 to-neutral-800"
       )}>
-        {/* Event Image */}
-        <div className="relative h-48 bg-gradient-to-r from-orange-400 to-red-500 overflow-hidden">
+        {/* Event Image - 16:9 aspect ratio */}
+        <div className="relative aspect-video bg-gradient-to-r from-orange-400 to-red-500 overflow-hidden flex items-center justify-center flex-shrink-0">
           {event.image_url ? (
-            <img 
+            <Image 
               src={event.image_url} 
               alt={event.title}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+              onError={() => {
+                // Gracefully fallback to icon - container already has background
+                logger.warn('Card image failed to load:', event.image_url);
+              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-500 to-pink-500">
-              <span className="text-6xl">{category?.icon || '🔥'}</span>
-            </div>
+            <span className="text-6xl z-10">{category?.icon || '🔥'}</span>
           )}
           
-          {/* Status Badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-2">
-            <Badge variant={status === 'Today' ? 'default' : 'secondary'}>
+          {/* Status Badges - Top Right (Glassmorphism) */}
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <span className="backdrop-blur-md bg-black/40 border border-white/10 text-white text-xs font-medium px-2.5 py-1 rounded-full">
               {status}
-            </Badge>
+            </span>
             {event.visibility === 'private' && (
-              <Badge variant="destructive" className="bg-purple-600 hover:bg-purple-700">
-                <Lock className="h-3 w-3 mr-1" />
+              <span className="backdrop-blur-md bg-fuchsia-600/20 border border-fuchsia-400/30 text-fuchsia-200 text-xs font-medium px-2.5 py-1 rounded-full inline-flex items-center">
+                <Lock className="h-3 w-3 mr-1 text-fuchsia-300" />
                 Private
-              </Badge>
+              </span>
             )}
           </div>
           
-          {/* Action Buttons */}
-          <div className="absolute top-3 right-3 flex gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 w-8 rounded-full p-0 bg-white/20 backdrop-blur-sm hover:bg-white/30"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLiked(!isLiked);
-              }}
-            >
-              <Heart 
-                className={cn(
-                  "h-4 w-4 transition-colors",
-                  isLiked ? "fill-red-500 text-red-500" : "text-white"
-                )}
-              />
-            </Button>
-            
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 w-8 rounded-full p-0 bg-white/20 backdrop-blur-sm hover:bg-white/30"
-              onClick={(e) => {
-                e.stopPropagation();
-                onShare?.();
-              }}
-            >
-              <Share2 className="h-4 w-4 text-white" />
-            </Button>
-            {/* Edit button visible to organizer only */}
-            {user && user.id === event.organizer_id && (
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-8 w-8 rounded-full p-0 bg-white/20 backdrop-blur-sm hover:bg-white/30"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(`/organizer/edit/${event.id}`);
-                }}
-              >
-                <Edit className="h-4 w-4 text-white" />
-              </Button>
-            )}
-          </div>
+          {/* Action Buttons: Edit (organizer), Share (all), Delete (organizer) - Bottom Right */}
+          {(showOrganizerActions && user && user.id === event.organizer_id) || onShare ? (
+            <div className="absolute bottom-3 right-3 flex gap-2 flex-nowrap z-10">
+              {showOrganizerActions && user && user.id === event.organizer_id && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 w-8 min-w-8 rounded-full p-0 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg transition-all hover:scale-110"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/organizer/edit/${event.id}`);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 text-gray-700" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 w-8 min-w-8 rounded-full p-0 bg-white/90 backdrop-blur-sm hover:bg-red-500 shadow-lg transition-all hover:scale-110"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-gray-700 group-hover:text-white" />
+                  </Button>
+                </>
+              )}
+
+              {onShare && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 w-8 min-w-8 rounded-full p-0 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg transition-all hover:scale-110"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShare?.();
+                  }}
+                >
+                  <Share2 className="h-4 w-4 text-gray-700" />
+                </Button>
+              )}
+            </div>
+          ) : null}
           
-          {/* Category Badge */}
-          <div className="absolute bottom-3 left-3">
-            <Badge 
-              variant="secondary" 
-              className="bg-white/90 text-gray-800 backdrop-blur-sm font-medium"
-            >
+          {/* Category Badge with Glassmorphism */}
+          <div className="absolute top-3 left-3">
+            <span className="backdrop-blur-md bg-black/40 border border-white/10 text-white text-xs font-medium px-2.5 py-1 rounded-full inline-flex items-center gap-1">
               {category?.icon} {category?.label || event.category}
-            </Badge>
+            </span>
           </div>
         </div>
 
-        <CardContent className="p-4">
-          {/* Event Title */}
-          <h3 className="font-bold text-lg mb-2 line-clamp-2 text-gray-900 dark:text-white break-words whitespace-normal">
+        <CardContent className="p-4 flex-1 flex flex-col">
+          {/* Date */}
+          <div className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-2">
+            {formatDate(event.date)} · {formatTime(event.time)}
+          </div>
+          
+          {/* Title */}
+          <h3 className="text-white text-lg font-semibold leading-tight mb-1 line-clamp-2 break-words">
             {event.title}
           </h3>
           
-          {/* Event Info */}
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <Calendar className="h-4 w-4" />
-              <span>{formatDate(event.date)}</span>
-              <Clock className="h-4 w-4 ml-2" />
-              <span>{formatTime(event.time)}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <MapPin className="h-4 w-4" />
-              <span className="line-clamp-1">{event.location}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <Users className="h-4 w-4" />
-              <span>
-                {event.attendees_count} going
-                {event.max_attendees && ` / ${event.max_attendees} max`}
-              </span>
-            </div>
+          {/* Location */}
+          <div className="text-slate-400 text-sm flex items-center gap-1 truncate">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{event.location}</span>
           </div>
           
-          {/* Description */}
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 break-words whitespace-normal">
-            {event.description}
-          </p>
-          
-          {/* Tags */}
-          {event.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-4">
-              {event.tags.slice(0, 3).map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-              {event.tags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{event.tags.length - 3}
-                </Badge>
-              )}
+          {/* Footer */}
+          <div className="flex items-center justify-between mt-auto pt-4">
+            {/* Left: Attendees */}
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {/* Placeholder avatars - you can render actual attendee avatars here */}
+                <div className="w-6 h-6 rounded-full bg-orange-500 border-2 border-gray-900" />
+                <div className="w-6 h-6 rounded-full bg-red-500 border-2 border-gray-900" />
+                <div className="w-6 h-6 rounded-full bg-yellow-500 border-2 border-gray-900" />
+              </div>
+              <span className="text-xs text-gray-400">
+                {event.attendees_count} going
+              </span>
             </div>
-          )}
-          
-          {/* Join Button (hidden if event ended/cancelled/completed) */}
-          {canJoin ? (
-            <Button
-              className={cn(
-                "w-full transition-all duration-200",
-                isJoined
-                  ? "bg-green-500 hover:bg-green-600 text-white"
-                  : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                isJoined ? onLeave?.() : onJoin?.();
-              }}
-            >
-              {isJoined ? 'Joined' : 'Join Event'}
-            </Button>
-          ) : (
-            <div className="w-full text-center py-2 text-sm text-muted-foreground">
-              {status === 'Cancelled'
-                ? 'Event cancelled'
-                : status === 'Completed'
-                  ? 'Event completed'
-                  : status}
-            </div>
-          )}
+            
+            {/* Right: Primary action area (Dashboard vs Home Feed) */}
+            {isDashboardView ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 px-4 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/event/${event.id}`);
+                }}
+              >
+                Manage
+              </Button>
+            ) : isOrganizer ? (
+              <span className="border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs">
+                Hosting
+              </span>
+            ) : canJoin ? (
+              isJoined ? (
+                <span className="border border-green-500/30 bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-xs">
+                  Going
+                </span>
+              ) : (
+                <Button
+                  className="bg-white text-black hover:bg-gray-200 px-5 py-2 rounded-full font-medium"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onJoin?.();
+                  }}
+                  disabled={!!event.max_attendees && event.attendees_count >= event.max_attendees}
+                >
+                  {(event.max_attendees && event.attendees_count >= event.max_attendees) ? 'Full' : 'Join'}
+                </Button>
+              )
+            ) : (
+              <span className="border border-slate-500/30 bg-slate-500/10 text-slate-400 px-3 py-1 rounded-full text-xs">
+                {status}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

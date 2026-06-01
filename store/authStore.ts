@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { auth } from '@/utils/supabase';
+import { logger } from '@/lib/logger';
 
 interface AuthState {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (redirectPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
 }
@@ -32,11 +33,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (error) throw error;
   },
 
-  signInWithGoogle: async () => {
+  signInWithGoogle: async (redirectPath = '/home') => {
     const { error } = await auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/home`
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`
       }
     });
     if (error) throw error;

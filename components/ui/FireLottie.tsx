@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { AnimationItem } from 'lottie-web';
+import { logger } from '@/lib/logger';
 
 // Cache animation data to avoid repeated fetches
 let cachedAnimationData: any = null;

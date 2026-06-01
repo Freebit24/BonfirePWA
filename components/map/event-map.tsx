@@ -15,14 +15,14 @@ import 'leaflet/dist/leaflet.css';
 // Fix for default markers
 delete (Icon.Default.prototype as any)._getIconUrl;
 Icon.Default.mergeOptions({
-  iconRetinaUrl: '/leaflet/marker-icon-2x.png',
-  iconUrl: '/leaflet/marker-icon.png',
-  shadowUrl: '/leaflet/marker-icon-shadow.png',
+  iconRetinaUrl: '/app/leaflet/marker-icon-2x.png',
+  iconUrl: '/app/leaflet/marker-icon.png',
+  shadowUrl: '/app/leaflet/marker-icon-shadow.png',
 });
 
 // Custom flame icon
 const flameIcon = new Icon({
-  iconUrl: '/flame-icon.png',
+  iconUrl: '/app/flame-icon.png',
   iconSize: [64, 64],
   iconAnchor: [16, 30],
   popupAnchor: [0, -30],
@@ -257,6 +257,7 @@ export const EventMap = forwardRef<EventMapRef, EventMapProps>(
           }
         `}</style>
         <MapContainer
+          key={`${getInitialCenter()[0]}-${getInitialCenter()[1]}-${getInitialZoom()}`}
           center={getInitialCenter()}
           zoom={getInitialZoom()}
           className="h-full w-full rounded-lg"

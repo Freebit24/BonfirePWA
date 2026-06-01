@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import supercluster from 'supercluster';
@@ -9,6 +10,7 @@ import { point as turfPoint } from '@turf/helpers';
 import 'leaflet/dist/leaflet.css';
 import type { Event } from '@/types';
 import { Navigation } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 type UserLocation = { latitude: number; longitude: number } | null;
 
@@ -66,7 +68,7 @@ function flameDivIcon(id: string, size: number, badgeText?: number) {
       <div style="position:relative;width:${s}px;height:${s}px">
         ${badge}
         <img 
-          src="/flame-icon.png" 
+          src="/app/flame-icon.png" 
           alt="flame" 
           style="width:${s}px;height:${s}px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4)) drop-shadow(0 0 12px rgba(255,140,0,0.6)) drop-shadow(0 0 20px rgba(255,69,0,0.4));" 
         />
@@ -131,7 +133,7 @@ function MapContent({
       const event = e.detail;
       if (!event || !event.id) return;
 
-      console.log('Opening popup for event:', event.id);
+      logger.log('Opening popup for event:', event.id);
 
       // Close previously open popup
       if (openPopupRef.current && openPopupRef.current !== event.id) {
@@ -142,11 +144,11 @@ function MapContent({
       }
 
       const marker = markerRefs.current.get(event.id);
-      console.log('Marker exists:', !!marker);
+      logger.log('Marker exists:', !!marker);
       
       if (marker) {
         // Marker exists (not clustered), pan and open
-        console.log('Marker found, opening directly');
+        logger.log('Marker found, opening directly');
         map.panTo([event.latitude, event.longitude], { animate: true });
         setTimeout(() => {
           try {
@@ -154,9 +156,9 @@ function MapContent({
             if (popup) {
               marker.openPopup();
               openPopupRef.current = event.id;
-              console.log('Popup opened successfully');
+              logger.log('Popup opened successfully');
             } else {
-              console.warn('Popup not found on marker');
+              logger.warn('Popup not found on marker');
             }
           } catch (error) {
             console.error('Error opening popup:', error);
@@ -165,7 +167,7 @@ function MapContent({
       } else {
         // Marker doesn't exist yet (likely clustered)
         // Find which cluster contains this event and get the expansion zoom
-        console.log('Marker not found, finding containing cluster');
+        logger.log('Marker not found, finding containing cluster');
         
         const currentZoom = map.getZoom();
         const allClusters = indexRef.current.getClusters([-180, -85, 180, 85], currentZoom);
@@ -183,13 +185,13 @@ function MapContent({
                 indexRef.current.getClusterExpansionZoom(cluster.properties.cluster_id),
                 18
               );
-              console.log('Found cluster, expansion zoom:', targetZoom);
+              logger.log('Found cluster, expansion zoom:', targetZoom);
               break;
             }
           }
         }
         
-        console.log('Zooming to level:', targetZoom);
+        logger.log('Zooming to level:', targetZoom);
         map.setView([event.latitude, event.longitude], targetZoom, { animate: true });
         
         // After zooming, wait for re-render and try again with retry logic
@@ -199,18 +201,18 @@ function MapContent({
         const tryOpenPopup = () => {
           retries++;
           const newMarker = markerRefs.current.get(event.id);
-          console.log(`Retry ${retries}: Marker found:`, !!newMarker);
+          logger.log(`Retry ${retries}: Marker found:`, !!newMarker);
           
           if (newMarker) {
             try {
-              console.log('Opening popup after zoom');
+              logger.log('Opening popup after zoom');
               const popup = newMarker.getPopup();
               if (popup) {
                 newMarker.openPopup();
                 openPopupRef.current = event.id;
-                console.log('Popup opened after zoom');
+                logger.log('Popup opened after zoom');
               } else {
-                console.warn('Popup not ready on retry', retries);
+                logger.warn('Popup not ready on retry', retries);
                 if (retries < maxRetries) {
                   setTimeout(tryOpenPopup, 200);
                 }
@@ -222,7 +224,7 @@ function MapContent({
             // Retry after 200ms
             setTimeout(tryOpenPopup, 200);
           } else {
-            console.log('Max retries reached, marker still not found');
+            logger.log('Max retries reached, marker still not found');
           }
         };
         
@@ -240,7 +242,7 @@ function MapContent({
     const handleZoomToEvent = (e: CustomEvent) => {
       const event = e.detail;
       if (event && event.latitude && event.longitude) {
-        console.log('Zooming to event:', event.id);
+        logger.log('Zooming to event:', event.id);
         
         // Find which cluster contains this event and get the expansion zoom
         const currentZoom = map.getZoom();
@@ -261,7 +263,7 @@ function MapContent({
                 18
               );
               foundInCluster = true;
-              console.log('Found in cluster, expansion zoom:', targetZoom);
+              logger.log('Found in cluster, expansion zoom:', targetZoom);
               break;
             }
           }
@@ -424,7 +426,7 @@ function MapContent({
                     openPopupRef.current = ev.id;
                   }
                 } catch (error) {
-                  console.warn('Error opening popup on hover:', error);
+                  logger.warn('Error opening popup on hover:', error);
                 }
               },
               mouseout: (e) => {
@@ -444,7 +446,7 @@ function MapContent({
                   }
                   e.target.closePopup();
                 } catch (error) {
-                  console.warn('Error closing popup on mouseout:', error);
+                  logger.warn('Error closing popup on mouseout:', error);
                 }
               },
             }}
@@ -464,10 +466,12 @@ function MapContent({
                 {/* Event Image */}
                 {ev.image_url && (
                   <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-orange-400 to-orange-600">
-                    <img 
+                    <Image 
                       src={ev.image_url} 
                       alt={ev.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="300px"
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   </div>
@@ -608,6 +612,7 @@ export default function ClusteredFlameMap({
     }}
     >
       <MapContainer 
+        key={`${initialCenter[0]}-${initialCenter[1]}-${initialZoom}`}
         center={initialCenter} 
         zoom={initialZoom} 
         className="h-full w-full"

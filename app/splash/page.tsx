@@ -37,7 +37,7 @@ export default function RootPage() {
       <div className="text-center animate-fade-in-up space-y-4">
         <div className="inline-block">
           <Image
-            src="/bonfire-logo.png"
+            src="/app/bonfire-logo.png"
             alt="Bonfire Logo"
             width={300}
             height={300}

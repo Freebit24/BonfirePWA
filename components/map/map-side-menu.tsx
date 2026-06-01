@@ -1,6 +1,7 @@
-'use client';
+ 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Event } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -120,7 +121,6 @@ export function MapSideMenu({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       whileHover={{ x: 4 }}
-                      transition={{ duration: 0.2 }}
                     >
                       <Card
                         className={cn(
@@ -139,10 +139,12 @@ export function MapSideMenu({
                           {/* Event Image Thumbnail */}
                           <div className="flex-shrink-0">
                             {event.image_url ? (
-                              <img
+                              <Image
                                 src={event.image_url}
                                 alt={event.title}
-                                className="w-16 h-16 rounded-md object-cover"
+                                width={64}
+                                height={64}
+                                className="rounded-md object-cover"
                               />
                             ) : (
                               <div className="w-16 h-16 rounded-md bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
@@ -151,7 +153,7 @@ export function MapSideMenu({
                             )}
                           </div>
 
-                          {/* Event Info */}
+                          {/* Text Content */}
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-2 mb-1">
                               {event.title}
@@ -181,8 +183,7 @@ export function MapSideMenu({
                                 <Users className="h-3 w-3 flex-shrink-0" />
                                 <span>
                                   {event.attendees_count}
-                                  {event.max_attendees &&
-                                    ` / ${event.max_attendees}`}
+                                  {event.max_attendees && ` / ${event.max_attendees}`}
                                 </span>
                               </div>
                             </div>
