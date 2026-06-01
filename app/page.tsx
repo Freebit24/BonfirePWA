@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import BonfireLoadingBar from '@/components/ui/bonfire-loading-bar';
-import FireLottie from '@/components/ui/FireLottie';
+import Image from 'next/image';
 
 export default function RootPage() {
   const router = useRouter();
@@ -26,8 +26,15 @@ export default function RootPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-100/60 to-red-100/60 dark:from-[#0f0f0f] dark:to-[#1a1a1a] flex items-center justify-center px-6">
       <div className="text-center animate-fade-in-up space-y-4">
-        <div className="inline-block rounded-xl drop-shadow-md">
-          <FireLottie />
+        <div className="inline-block">
+          <Image
+            src="/bonfire-logo.png"
+            alt="Bonfire Logo"
+            width={350}
+            height={350}
+            className="rounded-xl drop-shadow-md"
+            priority
+          />
         </div>
 
         <h1 className="text-5xl font-extrabold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">

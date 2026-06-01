@@ -16,6 +16,8 @@ export interface Event {
   longitude: number;
   date: string;
   time: string;
+  end_date?: string;
+  end_time?: string;
   duration: number; // in minutes
   category: EventCategory;
   organizer_id: string;

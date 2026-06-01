@@ -1,7 +1,6 @@
 // components/ClusteredFlameMap.tsx
 'use client';
 
-import React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -9,7 +8,6 @@ import supercluster from 'supercluster';
 import { point as turfPoint } from '@turf/helpers';
 import 'leaflet/dist/leaflet.css';
 import type { Event } from '@/types';
-import type { AnimationItem } from 'lottie-web';
 
 type UserLocation = { latitude: number; longitude: number } | null;
 
@@ -52,71 +50,25 @@ function RecenterOnLocation({
   return null;
 }
 
-/* ---------- Lottie helpers ---------- */
-let lottieModule: any = null;
-const lottieCache = new WeakMap<HTMLElement, AnimationItem>();
-
-async function ensureLottie() {
-  if (!lottieModule) {
-    lottieModule = (await import('lottie-web/build/player/lottie_svg')).default;
-    lottieModule.setQuality('medium');
-  }
-  return lottieModule;
-}
-
-async function mountLottie(el: HTMLElement, animationData: any) {
-  if (!el || lottieCache.has(el) || !animationData) return;
-  const lottie = await ensureLottie();
-  const anim: AnimationItem = lottie.loadAnimation({
-    container: el,
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    animationData,
-    rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
-  });
-  lottieCache.set(el, anim);
-}
-
-function destroyLottie(el?: HTMLElement | null) {
-  if (!el) return;
-  const anim = lottieCache.get(el);
-  if (anim) {
-    anim.destroy();
-    lottieCache.delete(el);
-  }
-}
-
-function useFireAnimationData() {
-  const [data, setData] = useState<any>(null);
-  useEffect(() => {
-    let alive = true;
-    fetch('/lottie/fire.json')
-      .then((r) => r.json())
-      .then((d) => {
-        if (alive) setData(d);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return data;
-}
-
-function lottieDivIcon(id: string, size: number, badgeText?: number) {
+/* ---------- Icon creation helper ---------- */
+function flameDivIcon(id: string, size: number, badgeText?: number) {
   const s = Math.round(size);
   const badge =
     typeof badgeText === 'number'
       ? `<div style="position:absolute;right:-4px;top:-6px;min-width:22px;height:22px;border-radius:9999px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,.3)">${badgeText}</div>`
       : '';
   return L.divIcon({
-    className: 'lottie-fire-icon',
+    className: 'flame-icon',
     iconSize: [s, s],
     iconAnchor: [s / 2, s - 6],
     html: `
-      <div style="position:relative;width:${s}px;height:${s}px;will-change:transform">
+      <div style="position:relative;width:${s}px;height:${s}px">
         ${badge}
-        <div class="lottie-slot" data-id="${id}" style="width:${s}px;height:${s}px"></div>
+        <img 
+          src="/flame-icon.png" 
+          alt="flame" 
+          style="width:${s}px;height:${s}px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4)) drop-shadow(0 0 12px rgba(255,140,0,0.6)) drop-shadow(0 0 20px rgba(255,69,0,0.4));" 
+        />
       </div>
     `,
   });
@@ -160,53 +112,25 @@ function MapContent({
   const [zoom, setZoom] = useState<number>(map.getZoom());
   const [bounds, setBounds] = useState<L.LatLngBounds>(map.getBounds());
   const { index, clusters } = useClusters(events, zoom, bounds);
-  const fireData = useFireAnimationData();
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const markerRefs = useRef<Map<string, any>>(new Map());
 
   useEffect(() => {
-    const onZoomEnd = () => {
-      document.querySelectorAll<HTMLElement>('.lottie-slot').forEach((el) => {
-        const anim = lottieCache.get(el);
-        if (anim) {
-          anim.resize();
-          anim.play();
-        } else if (fireData) {
-          mountLottie(el, fireData);
-        }
-      });
-    };
-    map.on('zoomend', onZoomEnd);
-    return () => {
-      map.off('zoomend', onZoomEnd);
-    };
-  }, [map, fireData]);
-
-  useEffect(() => {
+    let debounceTimer: NodeJS.Timeout;
     const onMove = () => {
-      setZoom(map.getZoom());
-      setBounds(map.getBounds());
+      // Debounce to avoid excessive cluster recalculations during fast panning
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        setZoom(map.getZoom());
+        setBounds(map.getBounds());
+      }, 100);
     };
     map.on('moveend', onMove);
     return () => {
+      clearTimeout(debounceTimer);
       map.off('moveend', onMove);
     };
   }, [map]);
-
-  useEffect(() => {
-    if (!fireData) return;
-    requestAnimationFrame(() => {
-      document.querySelectorAll<HTMLElement>('.lottie-slot').forEach((el) => {
-        if (!lottieCache.get(el)) mountLottie(el, fireData);
-      });
-    });
-  }, [fireData]);
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      document.querySelectorAll<HTMLElement>('.lottie-slot').forEach((el) => {
-        if (!lottieCache.get(el) && fireData) mountLottie(el, fireData);
-      });
-    });
-  }, [clusters, fireData]);
 
   return (
     <>
@@ -215,9 +139,9 @@ function MapContent({
 
         if (c.properties.cluster) {
           const count = c.properties.point_count as number;
-          const size = Math.min(84, 36 + Math.log2(count + 1) * 12);
+          const size = Math.min(100, 50 + Math.log2(count + 1) * 14);
           const id = `cluster-${c.properties.cluster_id}`;
-          const icon = lottieDivIcon(id, size, count);
+          const icon = flameDivIcon(id, size, count);
 
           return (
             <Marker
@@ -225,18 +149,6 @@ function MapContent({
               position={[lat, lng]}
               icon={icon}
               eventHandlers={{
-                add: (e) => {
-                  const el = (e.target as any)?.getElement?.()?.querySelector?.(
-                    '.lottie-slot'
-                  ) as HTMLElement | null;
-                  if (el) mountLottie(el, fireData);
-                },
-                remove: (e) => {
-                  const el = (e.target as any)?.getElement?.()?.querySelector?.(
-                    '.lottie-slot'
-                  ) as HTMLElement | null;
-                  destroyLottie(el);
-                },
                 click: () => {
                   const expansionZoom = Math.min(
                     index.getClusterExpansionZoom(c.properties.cluster_id),
@@ -253,37 +165,67 @@ function MapContent({
         if (!ev) return null;
 
         const id = `event-${ev.id}`;
-        const icon = lottieDivIcon(id, 48);
+        const icon = flameDivIcon(id, 64);
 
         return (
           <Marker
             key={`${id}-${Math.round(zoom)}`}
             position={[ev.latitude as number, ev.longitude as number]}
             icon={icon}
+            ref={(markerRef) => {
+              if (markerRef) {
+                markerRefs.current.set(ev.id, markerRef);
+              }
+            }}
             eventHandlers={{
-              add: (e) => {
-                const el = (e.target as any)?.getElement?.()?.querySelector?.(
-                  '.lottie-slot'
-                ) as HTMLElement | null;
-                if (el) mountLottie(el, fireData);
+              mouseover: (e) => {
+                e.target.openPopup();
               },
-              remove: (e) => {
-                const el = (e.target as any)?.getElement?.()?.querySelector?.(
-                  '.lottie-slot'
-                ) as HTMLElement | null;
-                destroyLottie(el);
+              mouseout: (e) => {
+                // Close popup only if mouse leaves both marker and popup
+                const popupElement = e.target.getPopup()?.getElement();
+                if (popupElement) {
+                  popupElement.addEventListener('mouseenter', () => {
+                    e.target.openPopup();
+                  });
+                  popupElement.addEventListener('mouseleave', () => {
+                    e.target.closePopup();
+                  });
+                }
+                e.target.closePopup();
               },
               click: () => onEventClick(ev),
             }}
           >
-            <Popup>
-              <div className="p-2">
-                <div className="font-semibold">{ev.title}</div>
+            <Popup autoClose={false} closeOnClick={false} closeButton={false}>
+              <div className="p-3 min-w-64" onMouseEnter={() => {
+                const marker = markerRefs.current.get(ev.id);
+                if (marker) marker.openPopup();
+              }} onMouseLeave={() => {
+                const marker = markerRefs.current.get(ev.id);
+                if (marker) marker.closePopup();
+              }}>
+                <div className="font-semibold text-lg mb-2">{ev.title}</div>
+                {ev.description && (
+                  <div className="text-sm text-gray-600 mb-2 line-clamp-2">{ev.description}</div>
+                )}
+                <div className="text-sm text-gray-500 mb-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <span>📍</span>
+                    <span>{ev.location}</span>
+                  </div>
+                  {ev.date && ev.time && (
+                    <div className="flex items-center gap-1">
+                      <span>🕐</span>
+                      <span>{ev.date} at {ev.time}</span>
+                    </div>
+                  )}
+                </div>
                 <button
-                  className="mt-2 px-3 py-1 rounded bg-orange-500 text-white"
+                  className="w-full px-3 py-2 rounded bg-orange-500 text-white font-medium hover:bg-orange-600 transition"
                   onClick={() => onEventClick(ev)}
                 >
-                  View details
+                  View Details
                 </button>
               </div>
             </Popup>
@@ -298,9 +240,41 @@ function MapContent({
             className: 'user-loc',
             iconSize: [22, 22],
             iconAnchor: [11, 11],
-            html: `<div style="width:22px;height:22px;border-radius:9999px;background:#007aff;box-shadow:0 0 0 6px rgba(0,122,255,.15)"></div>`,
+            html: `<div style="width:22px;height:22px;border-radius:9999px;background:#007aff;box-shadow:0 0 0 6px rgba(0,122,255,.15);cursor:pointer"></div>`,
           })}
-        />
+          eventHandlers={{
+            click: () => {
+              if (zoom < 15) {
+                map.setView([userLocation.latitude, userLocation.longitude], 15, { animate: true });
+              }
+            },
+            mouseover: (e) => {
+              if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+              }
+              // Only show popup if not already zoomed in
+              if (zoom < 15) {
+                hoverTimeoutRef.current = setTimeout(() => {
+                  e.target.openPopup();
+                }, 1000);
+              }
+            },
+            mouseout: (e) => {
+              if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+                hoverTimeoutRef.current = null;
+              }
+              e.target.closePopup();
+            },
+          }}
+        >
+          <Popup closeButton={false} autoClose={false} closeOnClick={false}>
+            <div className="p-2 text-center">
+              <div className="font-semibold text-blue-600">Your Location</div>
+              <div className="text-sm text-gray-600 mt-1">Click to zoom in</div>
+            </div>
+          </Popup>
+        </Marker>
       )}
     </>
   );
@@ -325,8 +299,23 @@ export default function ClusteredFlameMap({
   recenterBehavior?: 'once' | 'follow';
 }) {
   return (
-    <div style={{ height, width: '100%', borderRadius: 12, overflow: 'hidden' }}>
-      <MapContainer center={initialCenter} zoom={initialZoom} className="h-full w-full">
+    <div style={{ 
+      height, 
+      width: '100%', 
+      borderRadius: 12, 
+      overflow: 'hidden',
+      contain: 'layout style paint',
+      willChange: 'contents',
+    }}>
+      <MapContainer 
+        center={initialCenter} 
+        zoom={initialZoom} 
+        className="h-full w-full"
+        preferCanvas={false}
+        zoomAnimation={true}
+        fadeAnimation={true}
+        markerZoomAnimation={true}
+      >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"

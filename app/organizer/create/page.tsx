@@ -84,6 +84,8 @@ export default function CreateEventPage() {
         longitude: formData.longitude,
         date: formData.date,
         time: formData.time,
+        end_date: formData.end_date,
+        end_time: formData.end_time,
         duration: durationMinutes,
         category: formData.category,
         organizer_id: user.id,

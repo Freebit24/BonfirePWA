@@ -5,14 +5,13 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/common/header';
 import { BottomNav } from '@/components/common/bottom-nav';
-// Crowd badge removed per request
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthStore } from '@/store/authStore';
 import { useEventStore } from '@/store/eventStore';
-import { formatDate, formatTime, getEventStatus } from '@/utils/helpers';
+import { formatDate, formatDateWithYear, formatTime, getEventStatus } from '@/utils/helpers';
 import { EVENT_CATEGORIES } from '@/utils/constants';
 import { toast } from 'sonner';
 import {
@@ -24,6 +23,7 @@ import {
   Navigation,
   QrCode,
   Edit,
+  CalendarClock,
 } from 'lucide-react';
 
 export default function EventDetailsClient({ eventId }: { eventId: string }) {
@@ -195,8 +195,6 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
               <Share2 className="h-4 w-4 text-white" />
             </Button>
           </div>
-
-          {/* Crowd badge removed */}
         </div>
 
         <div className="container mx-auto px-4 py-6">
@@ -210,44 +208,101 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
               {selectedEvent.title}
             </h1>
 
-            {/* Event Info */}
+            {/* Event Info Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Date & Time Section */}
               <div className="space-y-4">
-                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                  <Calendar className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">{formatDate(selectedEvent.date)}</p>
-                    <p className="text-sm">Date</p>
+                {/* Start Date & Time */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                      <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Starts</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {formatDateWithYear(selectedEvent.date)}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        {formatTime(selectedEvent.time)}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                  <Clock className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">{formatTime(selectedEvent.time)}</p>
-                    <p className="text-sm">Time</p>
+                {/* End Date & Time or Duration */}
+                {selectedEvent.end_date || selectedEvent.end_time ? (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                        <CalendarClock className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Ends</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {selectedEvent.end_date ? formatDateWithYear(selectedEvent.end_date) : formatDateWithYear(selectedEvent.date)}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+                          <Clock className="h-3.5 w-3.5" />
+                          {selectedEvent.end_time ? formatTime(selectedEvent.end_time) : 'Not specified'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                        <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Duration</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {selectedEvent.duration} minutes
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          End time not specified
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                  <Users className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">
-                      {selectedEvent.attendees_count} going
-                      {selectedEvent.max_attendees && ` / ${selectedEvent.max_attendees} max`}
-                    </p>
-                    <p className="text-sm">Attendees</p>
+                {/* Attendees */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                      <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Attendees</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {selectedEvent.attendees_count} going
+                      </p>
+                      {selectedEvent.max_attendees && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          Max capacity: {selectedEvent.max_attendees}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Map Preview */}
+              {/* Location Section */}
               <div className="space-y-3">
-                <div className="flex items-start gap-3 text-gray-600 dark:text-gray-400">
-                  <MapPin className="h-5 w-5 mt-1" />
-                  <div className="flex-1">
-                    <p className="font-medium">{selectedEvent.location}</p>
-                    <p className="text-sm">Location</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                      <MapPin className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Location</p>
+                      <p className="font-semibold text-gray-900 dark:text-white break-words">
+                        {selectedEvent.location}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 
@@ -261,7 +316,6 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
                     src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&q=${selectedEvent.latitude},${selectedEvent.longitude}&zoom=15`}
                     allowFullScreen
                   />
-                  {/* Overlay to prevent interaction (optional) */}
                   <div 
                     className="absolute inset-0 cursor-pointer"
                     onClick={handleGetDirections}

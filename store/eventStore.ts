@@ -273,7 +273,7 @@ export const useEventStore = create<EventState>((set, get) => ({
     const { events, searchQuery, selectedCategory, selectedTags, dateSort } = get();
 
     const filtered = events.filter(event => {
-      if (!isEventUpcoming(event.date, event.time)) {
+      if (!isEventUpcoming(event.date, event.time, (event as any).end_date, (event as any).end_time)) {
         return false;
       }
 

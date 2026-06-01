@@ -132,6 +132,8 @@ export default function EditEventForm({ eventId }: { eventId: string }) {
         longitude: formData.longitude,
         date: formData.date,
         time: formData.time,
+        end_date: formData.end_date,
+        end_time: formData.end_time,
         duration: durationMinutes,
         category: formData.category,
         max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : undefined,

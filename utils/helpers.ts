@@ -21,6 +21,16 @@ export const formatDate = (dateString: string): string => {
   });
 };
 
+export const formatDateWithYear = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
 export const formatTime = (timeString: string): string => {
   const [hours, minutes] = timeString.split(':');
   const date = new Date();
@@ -44,21 +54,40 @@ export const isEventToday = (dateString: string): boolean => {
   return eventDate.toDateString() === today.toDateString();
 };
 
-export const isEventUpcoming = (dateString: string, timeString: string): boolean => {
-  const eventDateTime = new Date(`${dateString}T${timeString}`);
+export const isEventUpcoming = (
+  dateString: string,
+  timeString: string,
+  endDateString?: string,
+  endTimeString?: string
+): boolean => {
   const now = new Date();
-  
+
+  // If an end date/time is provided, consider the event upcoming if the end is in the future
+  if (endDateString && endTimeString) {
+    const endDateTime = new Date(`${endDateString}T${endTimeString}`);
+    if (endDateTime > now) return true; // either ongoing or ends in future
+  }
+
+  // Fallback to start date/time
+  const eventDateTime = new Date(`${dateString}T${timeString}`);
   return eventDateTime > now;
 };
 
 export const getEventStatus = (event: Event): string => {
   if (event.status === 'cancelled') return 'Cancelled';
   if (event.status === 'completed') return 'Completed';
-  
-  const eventDateTime = new Date(`${event.date}T${event.time}`);
+
   const now = new Date();
-  
-  if (eventDateTime < now) return 'Ended';
+
+  // If end date/time is present, use it to determine if event has ended
+  if (event.end_date && event.end_time) {
+    const endDateTime = new Date(`${event.end_date}T${event.end_time}`);
+    if (endDateTime < now) return 'Ended';
+  } else {
+    const eventDateTime = new Date(`${event.date}T${event.time}`);
+    if (eventDateTime < now) return 'Ended';
+  }
+
   if (isEventToday(event.date)) return 'Today';
   return 'Upcoming';
 };
