@@ -10,6 +10,16 @@ import { SearchInput } from '@/components/common/search-input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 import { useAuthStore } from '@/store/authStore';
 import { useEventStore } from '@/store/eventStore';
 import { Plus, Calendar, Users, TrendingUp, Edit, Trash2, ArrowUpDown } from 'lucide-react';
@@ -19,10 +29,13 @@ import { toast } from 'sonner';
 export default function OrganizerPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { events, fetchEvents, deleteEvent } = useEventStore();
+  const { events, fetchEvents, deleteEvent, joinEvent, leaveEvent, hasJoinedEvent } = useEventStore();
   const [loading, setLoading] = useState(true);
   const [organizerSearch, setOrganizerSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [joinedEvents, setJoinedEvents] = useState<Record<string, boolean>>({});
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [eventToLeave, setEventToLeave] = useState<string | null>(null);
 
   // Filter events organized by current user
   const myEvents = events.filter(event => event.organizer_id === user?.id);
@@ -51,6 +64,18 @@ export default function OrganizerPage() {
     }
   }, [user, fetchEvents]);
 
+  useEffect(() => {
+    const checkJoinedStatus = async () => {
+      if (!user || myEvents.length === 0) return;
+      const joined: Record<string, boolean> = {};
+      for (const event of myEvents) {
+        joined[event.id] = await hasJoinedEvent(event.id, user.id);
+      }
+      setJoinedEvents(joined);
+    };
+    checkJoinedStatus();
+  }, [user, myEvents.length]);
+
   const handleDeleteEvent = async (eventId: string) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
@@ -59,6 +84,44 @@ export default function OrganizerPage() {
       } catch (error) {
         toast.error('Failed to delete event');
       }
+    }
+  };
+
+  const handleJoinEvent = async (eventId: string) => {
+    if (!user) return;
+    try {
+      const ok = await joinEvent(eventId, user.id);
+      if (ok) {
+        setJoinedEvents(prev => ({ ...prev, [eventId]: true }));
+        toast.success('Successfully joined the event!');
+      } else {
+        toast.error('You have already joined this event');
+      }
+    } catch {
+      toast.error('Failed to join event');
+    }
+  };
+
+  const handleLeaveEvent = async (eventId: string) => {
+    setEventToLeave(eventId);
+    setShowLeaveDialog(true);
+  };
+
+  const confirmLeave = async () => {
+    if (!user || !eventToLeave) return;
+    try {
+      const ok = await leaveEvent(eventToLeave, user.id);
+      if (ok) {
+        setJoinedEvents(prev => ({ ...prev, [eventToLeave]: false }));
+        toast.success('You have left the event');
+      } else {
+        toast.error('Failed to leave event');
+      }
+    } catch {
+      toast.error('Failed to leave event');
+    } finally {
+      setShowLeaveDialog(false);
+      setEventToLeave(null);
     }
   };
 
@@ -241,7 +304,19 @@ export default function OrganizerPage() {
                     </div>
 
                     <div onClick={() => router.push(`/event/${event.id}`)}>
-                      <EventCard event={event} />
+                      <EventCard 
+                        event={event}
+                        isJoined={joinedEvents[event.id] || false}
+                        onJoin={() => handleJoinEvent(event.id)}
+                        onLeave={() => handleLeaveEvent(event.id)}
+                        onShare={() => {
+                          navigator.share({
+                            title: event.title,
+                            text: event.description,
+                            url: `${window.location.origin}/event/${event.id}`,
+                          });
+                        }}
+                      />
                     </div>
                   </motion.div>
                 ))}
@@ -252,6 +327,23 @@ export default function OrganizerPage() {
       </main>
 
       <BottomNav />
+
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave Event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave this event? You can always join again later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLeave}>
+              Leave Event
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

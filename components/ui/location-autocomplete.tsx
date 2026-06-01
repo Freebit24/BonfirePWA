@@ -9,14 +9,13 @@ import { MapPin, Loader2 } from 'lucide-react';
 declare global {
   interface Window {
     google: any;
-    initMap: () => void;
   }
 }
 
 interface LocationData {
   address: string;
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
   placeId: string;
   name?: string;
 }
@@ -24,89 +23,135 @@ interface LocationData {
 interface LocationAutocompleteProps {
   value: string;
   onChange: (location: string) => void;
-  onLocationSelect: (locationData: LocationData) => void;
+  onSelect?: (locationData: LocationData) => void;
+  onLocationSelect?: (locationData: LocationData) => void;
   placeholder?: string;
   required?: boolean;
 }
 
+// Global promise to manage single Google Maps load - prevents duplicate script loads
+let googleMapsLoadingPromise: Promise<void> | null = null;
+
+const loadGoogleMaps = (): Promise<void> => {
+  // Return existing promise if already loading or loaded
+  if (googleMapsLoadingPromise) {
+    return googleMapsLoadingPromise;
+  }
+
+  // Check if Google Maps is already loaded
+  if ((window as any).google?.maps?.places) {
+    return Promise.resolve();
+  }
+
+  // Create promise and store it
+  googleMapsLoadingPromise = new Promise((resolve, reject) => {
+    try {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+
+      script.onload = () => {
+        // Wait for Google Maps to be fully initialized
+        const checkGoogleMaps = setInterval(() => {
+          if ((window as any).google?.maps?.places) {
+            clearInterval(checkGoogleMaps);
+            resolve();
+          }
+        }, 100);
+
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          clearInterval(checkGoogleMaps);
+          resolve();
+        }, 10000);
+      };
+
+      script.onerror = () => {
+        console.error('Failed to load Google Maps');
+        googleMapsLoadingPromise = null; // Reset on error
+        reject(new Error('Failed to load Google Maps API'));
+      };
+
+      document.head.appendChild(script);
+    } catch (error) {
+      console.error('Error loading Google Maps:', error);
+      googleMapsLoadingPromise = null; // Reset on error
+      reject(error);
+    }
+  });
+
+  return googleMapsLoadingPromise;
+};
+
 export function LocationAutocomplete({
   value,
   onChange,
+  onSelect,
   onLocationSelect,
   placeholder = "Enter event location",
   required = false
 }: LocationAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const autocompleteRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadGoogleMaps = async () => {
+    const initAutocomplete = async () => {
       try {
-        // Check if Google Maps is already loaded
-        if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
-          initializeAutocomplete();
-          return;
+        // Load Google Maps (or wait if already loading)
+        await loadGoogleMaps();
+
+        // Initialize autocomplete only once per component instance
+        if (inputRef.current && !autocompleteRef.current && (window as any).google?.maps?.places) {
+          const autocomplete = new (window as any).google.maps.places.Autocomplete(
+            inputRef.current,
+            {
+              types: ['establishment', 'geocode'],
+              fields: ['place_id', 'name', 'formatted_address', 'geometry.location'],
+              componentRestrictions: { country: 'in' }, // Restrict to India, remove if global
+            }
+          );
+
+          autocompleteRef.current = autocomplete;
+
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            
+            if (place && place.formatted_address && place.geometry?.location) {
+              const locationData: LocationData = {
+                address: place.formatted_address,
+                latitude: place.geometry.location.lat(),
+                longitude: place.geometry.location.lng(),
+                placeId: place.place_id || '',
+                name: place.name,
+              };
+
+              onChange(place.formatted_address);
+              
+              // Call whichever callback is provided (prefer onSelect for backward compatibility)
+              if (onSelect) {
+                onSelect(locationData);
+              } else if (onLocationSelect) {
+                onLocationSelect(locationData);
+              }
+            }
+          });
         }
-
-        // Load Google Maps script
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-
-        // Set up callback
-        (window as any).initMap = () => {
-          initializeAutocomplete();
-        };
-
-        script.onerror = () => {
-          console.error('Failed to load Google Maps');
-          setIsLoading(false);
-        };
-
-        document.head.appendChild(script);
       } catch (error) {
-        console.error('Error loading Google Maps:', error);
+        console.error('Error initializing autocomplete:', error);
+      } finally {
         setIsLoading(false);
       }
     };
 
-    const initializeAutocomplete = () => {
-      if (!inputRef.current || !(window as any).google) return;
+    initAutocomplete();
 
-      const autocomplete = new (window as any).google.maps.places.Autocomplete(
-        inputRef.current,
-        {
-          types: ['establishment', 'geocode'],
-          fields: ['place_id', 'name', 'formatted_address', 'geometry.location'],
-          componentRestrictions: { country: 'in' }, // Restrict to India, remove if global
-        }
-      );
-
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        
-        if (place && place.formatted_address && place.geometry?.location) {
-          const locationData: LocationData = {
-            address: place.formatted_address,
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-            placeId: place.place_id || '',
-            name: place.name,
-          };
-
-          onChange(place.formatted_address);
-          onLocationSelect(locationData);
-        }
-      });
-
-      setIsLoaded(true);
-      setIsLoading(false);
+    // Cleanup: don't remove the script since other components might use it
+    return () => {
+      // Component cleanup - preserve global script for reuse
     };
-
-    loadGoogleMaps();
-  }, [onChange, onLocationSelect]);
+  }, [onChange, onSelect, onLocationSelect]);
 
   return (
     <div className="relative">

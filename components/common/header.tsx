@@ -13,6 +13,7 @@ import {
   Menu,  
   Search,
   Plus,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -37,9 +38,9 @@ export function Header() {
   const menuItems = [
     { label: 'Home', href: '/home' },
     { label: 'Organizer', href: '/organizer' },
-    { label: 'Profile', href: '/profile' },
+    { label: 'Calendar', href: '/calendar' },
     { label: 'Notifications', href: '/notifications' },
-    { label: 'Help', href: '/help' },
+    { label: 'Profile', href: '/profile' },
   ];
 
   return (
@@ -124,6 +125,10 @@ export function Header() {
               <DropdownMenuItem onClick={() => router.push('/settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/help')}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Help
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>

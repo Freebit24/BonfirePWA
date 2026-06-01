@@ -18,6 +18,7 @@ export interface Event {
   time: string;
   end_date?: string;
   end_time?: string;
+  time_zone?: string;
   duration: number; // in minutes
   category: EventCategory;
   organizer_id: string;
@@ -27,6 +28,7 @@ export interface Event {
   image_url?: string;
   tags: string[];
   status: EventStatus;
+  visibility: EventVisibility;
   created_at: string;
   updated_at: string;
 }
@@ -39,6 +41,15 @@ export interface EventAttendee {
   checked_in: boolean;
   check_in_time?: string;
   created_at: string;
+}
+
+export interface EventInvite {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
+  email?: string | null;
 }
 
 export interface CheckIn {
@@ -64,6 +75,7 @@ export type EventCategory =
   | 'wellness';
 
 export type EventStatus = 'active' | 'cancelled' | 'completed';
+export type EventVisibility = 'public' | 'private';
 
 export type CrowdLevel = 'low' | 'medium' | 'high' | 'full';
 

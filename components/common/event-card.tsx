@@ -17,7 +17,8 @@ import {
   Calendar, 
   Users, 
   Heart,
-  Share2
+  Share2,
+  Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +44,12 @@ export function EventCard({
   const [isLiked, setIsLiked] = useState(false);
   const category = EVENT_CATEGORIES.find(cat => cat.value === event.category);
   const status = getEventStatus(event);
-  const canJoin = event.status === 'active' && isEventUpcoming(event.date, event.time);
+  const canJoin = event.status === 'active' && isEventUpcoming(
+    event.date,
+    event.time,
+    event.end_date,
+    event.end_time
+  );
 
   return (
     <motion.div
@@ -52,7 +58,12 @@ export function EventCard({
       transition={{ duration: 0.3 }}
       className={cn("w-full", className)}
     >
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <Card className={cn(
+        "overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300",
+        event.visibility === 'private' 
+          ? "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-2 border-purple-300 dark:border-purple-600" 
+          : "border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800"
+      )}>
         {/* Event Image */}
         <div className="relative h-48 bg-gradient-to-r from-orange-400 to-red-500 overflow-hidden">
           {event.image_url ? (
@@ -68,10 +79,16 @@ export function EventCard({
           )}
           
           {/* Status Badge */}
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 flex items-center gap-2">
             <Badge variant={status === 'Today' ? 'default' : 'secondary'}>
               {status}
             </Badge>
+            {event.visibility === 'private' && (
+              <Badge variant="destructive" className="bg-purple-600 hover:bg-purple-700">
+                <Lock className="h-3 w-3 mr-1" />
+                Private
+              </Badge>
+            )}
           </div>
           
           {/* Action Buttons */}
@@ -199,7 +216,11 @@ export function EventCard({
             </Button>
           ) : (
             <div className="w-full text-center py-2 text-sm text-muted-foreground">
-              {status === 'Cancelled' ? 'Event cancelled' : status === 'Completed' ? 'Event completed' : 'Event ended'}
+              {status === 'Cancelled'
+                ? 'Event cancelled'
+                : status === 'Completed'
+                  ? 'Event completed'
+                  : status}
             </div>
           )}
         </CardContent>

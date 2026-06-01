@@ -11,9 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthStore } from '@/store/authStore';
 import { useEventStore } from '@/store/eventStore';
+import { db } from '@/utils/supabase';
 import { formatDate, formatDateWithYear, formatTime, getEventStatus } from '@/utils/helpers';
 import { EVENT_CATEGORIES } from '@/utils/constants';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import {
   MapPin,
   Clock,
@@ -25,6 +27,16 @@ import {
   Edit,
   CalendarClock,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 export default function EventDetailsClient({ eventId }: { eventId: string }) {
   const router = useRouter();
@@ -39,39 +51,56 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
   const [loading, setLoading] = useState(true);
   const [isJoined, setIsJoined] = useState(false);
   const [organizerName, setOrganizerName] = useState<string>('');
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   useEffect(() => {
     const fetchAndCheckJoinStatus = async () => {
       console.log('Event details page: fetching event', eventId);
-      if (!eventId || !user) return;
+      if (!eventId) return;
+
       const event = await fetchEventById(eventId);
       console.log('Event details page: fetched event', event);
+
       try {
-        // force app-router to refresh server data so any SSR/SC caches update
         router.refresh();
-        console.log('Router refreshed after fetching event');
       } catch (e) {
         console.debug('router.refresh not available or failed', e);
       }
-      if (event && user) {
-        const joined = await hasJoinedEvent(event.id, user.id);
-        setIsJoined(joined);
-        
-        // Fetch organizer name
+
+      if (event) {
+        // Join status (only if user logged in)
+        if (user) {
+          const joined = await hasJoinedEvent(event.id, user.id);
+          setIsJoined(joined);
+        }
+
+        // Organizer: show email only (no IDs), fallback to current user's email or generic label
         if (event.organizer_id) {
-          // Try to get from organizer object first
-          if (event.organizer?.name) {
-            setOrganizerName(event.organizer.name);
-          } else if (event.organizer_id === user.id) {
-            // If current user is the organizer
-            setOrganizerName(user.user_metadata.name || user.email || 'You');
-          } else {
-            // You may need to fetch user profile here if you have a getUserById function
-            // For now, we'll use a fallback
-            setOrganizerName('Event Organizer');
+          try {
+            const { data: profile } = await db
+              .from('profiles')
+              .select('email')
+              .eq('id', event.organizer_id)
+              .maybeSingle();
+
+            const displayEmail = profile?.email?.trim();
+
+            if (displayEmail) {
+              setOrganizerName(displayEmail);
+            } else if (event.organizer_id === user?.id) {
+              setOrganizerName(user?.email || 'You');
+            } else {
+              setOrganizerName('Organizer');
+            }
+          } catch (err) {
+            console.warn('Failed to load organizer profile', err);
+            setOrganizerName(event.organizer_id === user?.id
+              ? (user?.email || 'You')
+              : 'Organizer');
           }
         }
       }
+
       setLoading(false);
     };
 
@@ -83,16 +112,27 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
 
     try {
       if (isJoined) {
-        await leaveEvent(selectedEvent.id, user.id);
-        setIsJoined(false);
-        toast.success('You have left the event');
+        setShowLeaveDialog(true);
       } else {
         await joinEvent(selectedEvent.id, user.id);
         setIsJoined(true);
         toast.success('Successfully joined the event!');
       }
     } catch (error) {
-      toast.error('Failed to update event attendance');
+      toast.error('Failed to update event status');
+    }
+  };
+
+  const confirmLeave = async () => {
+    if (!user || !selectedEvent) return;
+    
+    try {
+      await leaveEvent(selectedEvent.id, user.id);
+      setIsJoined(false);
+      setShowLeaveDialog(false);
+      toast.success('You have left the event');
+    } catch (error) {
+      toast.error('Failed to leave event');
     }
   };
 
@@ -154,13 +194,26 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
 
       <main className="pb-20 md:pb-6">
         {/* Hero Image */}
-        <div className="relative h-64 md:h-80 bg-gradient-to-r from-orange-400 to-red-500 overflow-hidden">
+        <div className="relative h-64 md:h-80 overflow-hidden">
           {selectedEvent.image_url ? (
-            <img
-              src={selectedEvent.image_url}
-              alt={selectedEvent.title}
-              className="w-full h-full object-cover"
-            />
+            <>
+              {/* Blurred background */}
+              <img
+                src={selectedEvent.image_url}
+                alt={selectedEvent.title}
+                className="absolute inset-0 w-full h-full object-cover blur-md scale-110"
+              />
+              {/* Semi-transparent overlay */}
+              <div className="absolute inset-0 bg-black/30" />
+              {/* Main image */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src={selectedEvent.image_url}
+                  alt={selectedEvent.title}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-500 to-pink-500">
               <span className="text-8xl">{category?.icon || '🔥'}</span>
@@ -356,10 +409,15 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                className={cn(
+                  "flex-1 transition-all duration-200",
+                  isJoined
+                    ? "bg-green-500 hover:bg-green-600 text-white"
+                    : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                )}
                 onClick={handleJoinEvent}
               >
-                {isJoined ? 'Leave Event' : 'Join Event'}
+                {isJoined ? 'Joined' : 'Join Event'}
               </Button>
 
               {isJoined && (
@@ -386,6 +444,23 @@ export default function EventDetailsClient({ eventId }: { eventId: string }) {
       </main>
 
       <BottomNav />
+
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave Event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave this event? You can always join again later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLeave}>
+              Leave Event
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

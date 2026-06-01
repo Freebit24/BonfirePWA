@@ -7,13 +7,14 @@ import {
   Search, 
   PlusCircle, 
   Bell, 
-  User 
+  User,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: Home, label: 'Home', href: '/home' },
-  { icon: Search, label: 'Search', href: '/search' },
+  { icon: Calendar, label: 'Calendar', href: '/calendar' },
   { icon: PlusCircle, label: 'Create', href: '/organizer/create' },
   { icon: Bell, label: 'Notifications', href: '/notifications' },
   { icon: User, label: 'Profile', href: '/profile' },

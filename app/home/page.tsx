@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { Header } from "@/components/common/header";
 import { BottomNav } from "@/components/common/bottom-nav";
 import { EventCard } from "@/components/common/event-card";
+import { MapSideMenu } from "@/components/map/map-side-menu";
 const ClusteredFlameMap = dynamic(
   () => import("@/components/map/ClusteredFlameMap"),
   {
@@ -22,6 +23,16 @@ import { SearchInput } from "@/components/common/search-input";
 import { CategoryFilter } from "@/components/common/category-filter";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 // ----- State stores -----
 import { useAuthStore } from "@/store/authStore";
@@ -67,6 +78,20 @@ export default function HomePage() {
   const [locationPermission, setLocationPermission] =
     useState<"granted" | "denied" | "prompt" | null>(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [showMapSideMenu, setShowMapSideMenu] = useState(true);
+  const [visibleMapEvents, setVisibleMapEvents] = useState<any[]>([]);
+  const visibleEventsDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [eventToLeave, setEventToLeave] = useState<string | null>(null);
+
+  const handleVisibleEventsChange = useCallback((events: any[]) => {
+    if (visibleEventsDebounceRef.current) {
+      clearTimeout(visibleEventsDebounceRef.current);
+    }
+    visibleEventsDebounceRef.current = setTimeout(() => {
+      setVisibleMapEvents(events);
+    }, 100);
+  }, []);
 
   useEffect(() => {
     initialize();
@@ -91,7 +116,7 @@ export default function HomePage() {
     events.forEach(event => {
       hasJoinedEvent(event.id, user.id);
     });
-  }, [user, events, hasJoinedEvent]);
+  }, [user, events]);
 
   // Warm the clustered map chunk so it’s ready when we render it
   useEffect(() => {
@@ -180,7 +205,15 @@ export default function HomePage() {
     setLocationPermission("denied");
   };
 
-  const handleEventClick = (event: any) => router.push(`/event/${event.id}`);
+  const handleEventClick = (event: any) => {
+    // Navigate to event details page
+    router.push(`/event/${event.id}`);
+  };
+
+  const handleEventSelectForZoom = (event: any) => {
+    // Trigger map zoom/popup interaction without navigation
+    window.dispatchEvent(new CustomEvent('zoomToEvent', { detail: event }));
+  };
 
   const handleJoinEvent = async (eventId: string) => {
     if (!user) return;
@@ -197,9 +230,14 @@ export default function HomePage() {
   };
 
   const handleLeaveEvent = async (eventId: string) => {
-    if (!user) return;
+    setEventToLeave(eventId);
+    setShowLeaveDialog(true);
+  };
+
+  const confirmLeave = async () => {
+    if (!user || !eventToLeave) return;
     try {
-      const ok = await leaveEvent(eventId, user.id);
+      const ok = await leaveEvent(eventToLeave, user.id);
       if (ok) {
         toast.success("You have left the event");
       } else {
@@ -207,6 +245,9 @@ export default function HomePage() {
       }
     } catch {
       toast.error("Failed to leave event");
+    } finally {
+      setShowLeaveDialog(false);
+      setEventToLeave(null);
     }
   };
 
@@ -362,12 +403,6 @@ export default function HomePage() {
               <CategoryFilter
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
-                tagsList={Array.from(new Set(events.flatMap(e => e.tags))).slice(
-                  0,
-                  50
-                )}
-                selectedTags={selectedTags}
-                onTagsChange={setSelectedTags}
                 dateSort={dateSort}
                 onDateSortChange={setDateSort}
               />
@@ -381,6 +416,14 @@ export default function HomePage() {
               events={displayedEvents}
               onEventClick={handleEventClick}
               userLocation={userLocation}
+              onVisibleEventsChange={handleVisibleEventsChange}
+            />
+            <MapSideMenu
+              events={visibleMapEvents}
+              onEventClick={handleEventClick}
+              onEventSelect={handleEventSelectForZoom}
+              isOpen={showMapSideMenu}
+              onToggle={setShowMapSideMenu}
             />
             {loading && (
               <div className="absolute inset-0 bg-background/40 backdrop-blur-sm animate-pulse pointer-events-none" />
@@ -389,7 +432,7 @@ export default function HomePage() {
         ) : (
           <>
             {loading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
@@ -416,7 +459,7 @@ export default function HomePage() {
             )}
 
             {!loading && displayedEvents.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {displayedEvents.map((event) => (
                   <motion.div
                     key={event.id}
@@ -448,6 +491,23 @@ export default function HomePage() {
       </main>
 
       <BottomNav />
+
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave Event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave this event? You can always join again later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLeave}>
+              Leave Event
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

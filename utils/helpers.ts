@@ -78,16 +78,27 @@ export const getEventStatus = (event: Event): string => {
   if (event.status === 'completed') return 'Completed';
 
   const now = new Date();
+  const startDateTime = new Date(`${event.date}T${event.time}`);
+  const hasEnd = !!(event.end_date && event.end_time);
+  const endDateTime = hasEnd
+    ? new Date(`${event.end_date}T${event.end_time}`)
+    : null;
 
-  // If end date/time is present, use it to determine if event has ended
-  if (event.end_date && event.end_time) {
-    const endDateTime = new Date(`${event.end_date}T${event.end_time}`);
-    if (endDateTime < now) return 'Ended';
-  } else {
-    const eventDateTime = new Date(`${event.date}T${event.time}`);
-    if (eventDateTime < now) return 'Ended';
+  // Determine if event is over
+  if (hasEnd && endDateTime && endDateTime < now) return 'Ended';
+
+  // If no explicit end, consider end of the day as the end boundary
+  if (!hasEnd) {
+    const endOfDay = new Date(event.date);
+    endOfDay.setHours(23, 59, 59, 999);
+    if (endOfDay < now) return 'Ended';
   }
 
+  // Ongoing (started and not yet ended)
+  const isOngoing = startDateTime <= now && (!endDateTime || endDateTime >= now);
+  if (isOngoing) return 'Live';
+
+  // Not started yet
   if (isEventToday(event.date)) return 'Today';
   return 'Upcoming';
 };

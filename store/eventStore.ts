@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Event, EventCategory, MapBounds } from '@/types';
+import { Event, EventCategory, EventInvite, MapBounds } from '@/types';
 import { db } from '@/utils/supabase';
 import { isEventUpcoming } from '@/utils/helpers';
 
@@ -20,6 +20,9 @@ interface EventState {
   createEvent: (event: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => Promise<Event>;
   updateEvent: (id: string, updates: Partial<Event>) => Promise<Event | null>;
   deleteEvent: (id: string) => Promise<void>;
+  inviteUserByEmail: (eventId: string, email: string) => Promise<EventInvite>;
+  fetchInvites: (eventId: string) => Promise<EventInvite[]>;
+  deleteInvite: (inviteId: string) => Promise<void>;
   joinEvent: (eventId: string, userId: string) => Promise<boolean>;
   leaveEvent: (eventId: string, userId: string) => Promise<boolean>;
   hasJoinedEvent: (eventId: string, userId: string) => Promise<boolean>;
@@ -52,12 +55,7 @@ export const useEventStore = create<EventState>((set, get) => ({
     try {
       let query = db
         .from('events')
-        .select(
-          `
-          *,
-          organizer:profiles!events_organizer_id_fkey(*)
-        `
-        )
+        .select('*')
         .eq('status', 'active');
 
       if (bounds) {
@@ -84,12 +82,7 @@ export const useEventStore = create<EventState>((set, get) => ({
     try {
       const { data, error } = await db
         .from('events')
-        .select(
-          `
-          *,
-          organizer:profiles!events_organizer_id_fkey(*)
-        `
-        )
+        .select('*')
         .eq('id', id)
         .single();
 
@@ -107,12 +100,7 @@ export const useEventStore = create<EventState>((set, get) => ({
     const { data, error } = await db
       .from('events')
       .insert(eventData)
-      .select(
-        `
-        *,
-        organizer:profiles!events_organizer_id_fkey(*)
-      `
-      )
+      .select('*')
       .single();
 
     if (error) {
@@ -122,6 +110,101 @@ export const useEventStore = create<EventState>((set, get) => ({
 
     set(state => ({ events: [...state.events, data as Event] }));
     return data as Event;
+  },
+
+  inviteUserByEmail: async (eventId, email) => {
+    const cleanedEmail = (email || '').trim().toLowerCase();
+    if (!cleanedEmail) {
+      throw new Error('Email is required');
+    }
+
+    // Find profile by email
+    const { data: profile, error: profileError } = await db
+      .from('profiles')
+      .select('id, email')
+      .eq('email', cleanedEmail)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Error fetching profile by email:', profileError);
+      throw profileError;
+    }
+
+    if (!profile) {
+      throw new Error('No user found with that email');
+    }
+
+    // Avoid duplicate invites
+    const { data: existing, error: existingError } = await db
+      .from('event_invites')
+      .select('id, status')
+      .eq('event_id', eventId)
+      .eq('user_id', profile.id)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error('Error checking existing invite:', existingError);
+      throw existingError;
+    }
+
+    if (existing) {
+      throw new Error('User is already invited');
+    }
+
+    const { data, error } = await db
+      .from('event_invites')
+      .insert({ event_id: eventId, user_id: profile.id, email: cleanedEmail, status: 'pending' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating invite:', error);
+      throw error;
+    }
+
+    return data as EventInvite;
+  },
+
+  fetchInvites: async (eventId) => {
+    const { data, error } = await db
+      .from('event_invites')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching invites:', error);
+      throw error;
+    }
+
+    // Fetch user details separately to avoid FK issues
+    const invitesWithUsers = await Promise.all(
+      (data || []).map(async (invite: any) => {
+        if (invite.user_id) {
+          const { data: user } = await db
+            .from('profiles')
+            .select('id, email, name, avatar_url')
+            .eq('id', invite.user_id)
+            .single();
+          return { ...invite, user };
+        }
+        return invite;
+      })
+    );
+
+    return invitesWithUsers;
+  },
+
+  deleteInvite: async (inviteId) => {
+    const { error } = await db
+      .from('event_invites')
+      .delete()
+      .eq('id', inviteId);
+
+    if (error) {
+      console.error('Error deleting invite:', error);
+      throw error;
+    }
   },
 
   updateEvent: async (id, updates) => {
@@ -138,7 +221,7 @@ export const useEventStore = create<EventState>((set, get) => ({
       }
 
       console.log('Update successful, re-fetching event...');
-      // Re-fetch the event with related organizer to ensure consistent shape
+      // Re-fetch the event to ensure consistent shape
       const updated = await get().fetchEventById(id);
 
       if (!updated) {
