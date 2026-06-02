@@ -166,131 +166,116 @@ export default function OrganizerPage() {
     <div className="min-h-screen bg-transparent">
       <Header />
       
-      <main className="container mx-auto px-4 py-6 pb-20 md:pb-6">
+      <main className="container mx-auto px-4 py-6 pb-20 md:py-10 md:pb-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Organizer Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage your events and track engagement
-              </p>
+          <div className="flex items-start md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl font-bold md:text-4xl">Organizer Dashboard</h1>
+              <p className="text-sm text-slate-400 md:text-base">Manage your events and track engagement</p>
             </div>
-            
-            <Button
+
+            <button
               onClick={() => router.push('/organizer/create')}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-lg text-sm md:text-base font-medium flex items-center gap-1 md:gap-2 shadow-sm transition-colors whitespace-nowrap"
             >
-              <Plus className="h-5 w-5 mr-2" />
-              Create Event
-            </Button>
+              <Plus className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="md:hidden">Create</span>
+              <span className="hidden md:inline">Create Event</span>
+            </button>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalEvents}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.activeEvents} active
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Attendees</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalAttendees}</div>
-                <p className="text-xs text-muted-foreground">
-                  Across all events
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Attendance</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+          {/* Stats Strip */}
+          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden text-white mb-4 md:mb-6">
+            <div className="grid grid-cols-3 divide-x divide-white/10">
+              <div className="flex flex-col items-start px-4 py-3 gap-1 md:px-5 md:py-4">
+                <div className="text-3xl font-extrabold leading-none">{stats.totalEvents}</div>
+                <div className="text-xs text-gray-500">Events</div>
+                <div className="text-[10px] text-emerald-400">{stats.activeEvents} active</div>
+              </div>
+
+              <div className="flex flex-col items-start px-4 py-3 gap-1 md:px-5 md:py-4">
+                <div className="text-3xl font-extrabold leading-none">{stats.totalAttendees}</div>
+                <div className="text-xs text-gray-500">Attendees</div>
+                <div className="text-[10px] text-slate-400">All time</div>
+              </div>
+
+              <div className="flex flex-col items-start px-4 py-3 gap-1 md:px-5 md:py-4">
+                <div className="text-3xl font-extrabold leading-none">
                   {stats.totalEvents > 0 ? Math.round(stats.totalAttendees / stats.totalEvents) : 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Per event
-                </p>
-              </CardContent>
-            </Card>
+                <div className="text-xs text-gray-500">Avg. Attendance</div>
+                <div className="text-[10px] text-slate-400">Per event</div>
+              </div>
+            </div>
           </div>
 
           {/* Events List */}
-          <div className="space-y-6">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold">Your Events</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="space-y-3 md:space-y-5">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+                <div className="flex-shrink-0">
+                  <h2 className="text-xl font-semibold md:text-2xl">Your Events</h2>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 md:text-sm">
                     {filteredMyEvents.length} of {myEvents.length} event{myEvents.length !== 1 ? 's' : ''}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowUpDown className="h-4 w-4" />
-                    {sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}
-                  </Button>
-                  
-                  <div className="flex-1 md:w-64">
+                <div className="flex items-center gap-2 w-full md:gap-3 md:w-auto">
+                  <div className="flex-1">
                     <SearchInput
                       value={organizerSearch}
                       onChange={setOrganizerSearch}
                       placeholder="Search your events..."
+                      className="w-full"
+                      inputClassName="h-11 min-h-[44px]"
                     />
                   </div>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+                    className="h-11 w-11 min-h-[44px] md:w-auto md:px-4 border border-input bg-background text-slate-300 hover:text-white"
+                    aria-label="Sort events"
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                    <span className="hidden md:inline md:ml-2 text-sm">
+                      {sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}
+                    </span>
+                  </Button>
                 </div>
               </div>
 
             {myEvents.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎪</div>
-                <h3 className="text-xl font-semibold mb-2">No events yet</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <div className="text-center py-8 px-4 md:py-12">
+                <div className="text-5xl mb-3 md:text-6xl md:mb-4">🎪</div>
+                <h3 className="text-lg font-semibold mb-2 md:text-xl">No events yet</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 md:text-base">
                   Create your first event to get started as an organizer
                 </p>
                 <Button
                   onClick={() => router.push('/organizer/create')}
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                  className="w-full min-h-[44px] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white md:w-auto"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   Create Your First Event
                 </Button>
               </div>
             ) : filteredMyEvents.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-xl font-semibold mb-2">No events match</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <div className="text-center py-8 px-4 md:py-12">
+                <h3 className="text-lg font-semibold mb-2 md:text-xl">No events match</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 md:text-base">
                   Try adjusting your search to find your events
                 </p>
                 <Button
                   onClick={() => setOrganizerSearch('')}
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                  className="w-full min-h-[44px] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white md:w-auto"
                 >
                   Clear Search
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max md:gap-5 lg:gap-6">
                 {filteredMyEvents.map((event) => (
                   <motion.div
                     key={event.id}

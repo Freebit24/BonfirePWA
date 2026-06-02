@@ -486,64 +486,99 @@ export default function HomePage() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                <div className="space-y-1">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Region / City
-                  </label>
-                  <LocationAutocomplete
-                    value={regionFilter}
-                    onChange={(value) => {
-                      setRegionFilter(value);
+              <div className="w-full bg-slate-900/30 backdrop-blur-md border-b border-white/5 p-4 mb-6 flex flex-col gap-4 rounded-b-2xl lg:p-6 lg:mb-8 lg:gap-6">
+                
+                {/* ROW 1: LOCATION INPUTS */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+                  {/* City Input - spans 3 columns on desktop */}
+                  <div className="md:col-span-3 space-y-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider md:tracking-widest">
+                      Region / City
+                    </label>
+                    <LocationAutocomplete
+                      value={regionFilter}
+                      onChange={(value) => {
+                        setRegionFilter(value);
+                        setRegionLocation(null);
+                      }}
+                      onLocationSelect={(loc) => {
+                        setRegionFilter(loc.name || loc.address);
+                        setRegionLocation({ latitude: loc.latitude, longitude: loc.longitude });
+                      }}
+                      placeholder="Search city..."
+                      types={['(cities)']}
+                    />
+                  </div>
+
+                  {/* Radius Input - spans 1 column on desktop */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider md:tracking-widest">
+                      Radius (km)
+                    </label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={radiusKm}
+                      onChange={(e) => setRadiusKm(e.target.value)}
+                      placeholder="e.g., 10"
+                      className="h-11 w-full bg-white/5 border border-white/10 focus:bg-slate-800 focus:border-orange-500 text-white text-sm placeholder-slate-500 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* ROW 2: CATEGORY CHIPS */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 lg:gap-3">
+                  <CategoryFilter
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={setSelectedCategory}
+                    dateSort={dateSort}
+                    onDateSortChange={setDateSort}
+                  />
+                </div>
+
+                {/* ROW 3: FOOTER */}
+                <div className="flex flex-col gap-3 pt-3 border-t border-white/5 md:flex-row md:items-center md:justify-between md:pt-4">
+                  {/* Left: Reset Button */}
+                  <button
+                    onClick={() => {
+                      setRegionFilter("");
                       setRegionLocation(null);
+                      setRadiusKm("");
+                      setSelectedCategory(null);
+                      setSelectedTags([]);
+                      setDateSort('newest');
                     }}
-                    onLocationSelect={(loc) => {
-                      setRegionFilter(loc.name || loc.address);
-                      setRegionLocation({ latitude: loc.latitude, longitude: loc.longitude });
-                    }}
-                    placeholder="Search city..."
-                    types={['(cities)']}
-                  />
+                    className="text-slate-400 hover:text-red-400 text-sm font-medium transition-colors text-left min-h-[44px] flex items-center md:min-h-0"
+                  >
+                    Reset Filters
+                  </button>
+
+                  {/* Right: Sort Control - Segmented */}
+                  <div className="inline-flex bg-white/5 p-1 rounded-lg border border-white/10 w-full md:w-auto">
+                    <button
+                      onClick={() => setDateSort('newest')}
+                      className={cn(
+                        "flex-1 md:flex-none px-4 py-2 rounded-md text-xs font-medium transition-all md:px-3 md:py-1",
+                        dateSort === 'newest'
+                          ? "bg-slate-700 text-white shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      )}
+                    >
+                      Newest
+                    </button>
+                    <button
+                      onClick={() => setDateSort('oldest')}
+                      className={cn(
+                        "flex-1 md:flex-none px-4 py-2 rounded-md text-xs font-medium transition-all md:px-3 md:py-1",
+                        dateSort === 'oldest'
+                          ? "bg-slate-700 text-white shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      )}
+                    >
+                      Oldest
+                    </button>
+                  </div>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Radius (km)
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={radiusKm}
-                    onChange={(e) => setRadiusKm(e.target.value)}
-                    placeholder="e.g., 10"
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500">Uses selected city or your location.</p>
-                </div>
-              </div>
-
-              <CategoryFilter
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-                dateSort={dateSort}
-                onDateSortChange={setDateSort}
-              />
-
-              <div className="flex gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  className="whitespace-nowrap min-h-10 px-3"
-                  onClick={() => {
-                    setRegionFilter("");
-                    setRegionLocation(null);
-                    setRadiusKm("");
-                    setSelectedCategory(null);
-                    setSelectedTags([]);
-                    setDateSort('newest');
-                  }}
-                >
-                  Clear Filters
-                </Button>
               </div>
             </motion.div>
           )}

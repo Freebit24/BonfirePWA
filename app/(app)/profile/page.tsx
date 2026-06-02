@@ -177,54 +177,54 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto">
           {/* Profile Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Card className="border-0 shadow-lg mb-6">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row items-center gap-6">
+            <Card className="border-0 shadow-lg mb-4 relative">
+              <CardContent className="p-4">
+                <div className="flex flex-row items-start gap-4 text-left">
                   {isReady ? (
                     <>
-                      <Avatar className="w-24 h-24">
+                      <Avatar className="w-20 h-20 flex-shrink-0">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
-                        <AvatarFallback className="text-2xl">
+                        <AvatarFallback className="text-lg">
                           {user.user_metadata?.name?.[0] || user.email?.[0] || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 text-center md:text-left">
-                        <h1 className="text-3xl font-bold mb-2">
+                      
+                      <div className="flex-1 min-w-0">
+                        <h1 className="text-xl font-bold text-white mb-2 truncate md:text-4xl md:mb-3">
                           {user.user_metadata?.name || 'User'}
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mb-4">
-                          {user.email}
-                        </p>
-                        <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                          <Badge variant="secondary">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            Joined {formatDate(user.created_at)}
-                          </Badge>
-                          <Badge variant="secondary">
-                            <Trophy className="h-3 w-3 mr-1" />
-                            Event Enthusiast
-                          </Badge>
+                        <div className="flex flex-wrap gap-1.5 md:gap-2">
+                          <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-full md:gap-2 md:px-4 md:py-1.5">
+                            <Calendar className="h-3 w-3 text-orange-500 md:h-4 md:w-4" />
+                            <span className="text-[10px] text-gray-300 md:text-sm">Joined {formatDate(user.created_at)}</span>
+                          </div>
+                          <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-full md:gap-2 md:px-4 md:py-1.5">
+                            <Trophy className="h-3 w-3 text-orange-500 md:h-4 md:w-4" />
+                            <span className="text-[10px] text-gray-300 md:text-sm">Enthusiast</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => router.push('/settings')}>
-                          <Settings className="h-4 w-4 mr-2" />
-                          Settings
-                        </Button>
-                      </div>
+
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => router.push('/settings')} 
+                        className="h-10 w-10 flex-shrink-0 hover:opacity-70 transition-opacity bg-transparent p-2 md:h-12 md:w-12"
+                      >
+                        <Settings className="h-4 w-4 md:h-6 md:w-6" />
+                      </Button>
                     </>
                   ) : (
-                    <div className="flex items-center gap-6 w-full">
-                      <div className="w-24 h-24 rounded-full bg-muted/20 animate-pulse" />
-                      <div className="flex-1 space-y-3">
-                        <div className="h-6 w-48 bg-muted/20 animate-pulse rounded" />
-                        <div className="h-4 w-64 bg-muted/20 animate-pulse rounded" />
-                        <div className="flex gap-2">
-                          <div className="h-6 w-32 bg-muted/20 animate-pulse rounded" />
-                          <div className="h-6 w-28 bg-muted/20 animate-pulse rounded" />
+                    <div className="flex items-center gap-4 w-full">
+                      <div className="w-20 h-20 rounded-full bg-muted/20 animate-pulse flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-5 w-32 bg-muted/20 animate-pulse rounded" />
+                        <div className="flex gap-1.5">
+                          <div className="h-6 w-28 bg-muted/20 animate-pulse rounded-full" />
+                          <div className="h-6 w-24 bg-muted/20 animate-pulse rounded-full" />
                         </div>
                       </div>
-                      <div className="h-9 w-24 bg-muted/20 animate-pulse rounded" />
+                      <div className="h-10 w-10 bg-muted/20 animate-pulse rounded flex-shrink-0" />
                     </div>
                   )}
                 </div>
@@ -232,68 +232,48 @@ export default function ProfilePage() {
             </Card>
           </motion.div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {isReady ? (
-              <>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Events Attended</CardTitle>
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.eventsJoined}</div>
-                    <p className="text-xs text-muted-foreground">Past events</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Events Organized</CardTitle>
-                    <Star className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.eventsHosted}</div>
-                    <p className="text-xs text-muted-foreground">As organizer</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Check-ins</CardTitle>
-                    <Trophy className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalCheckIns}</div>
-                    <p className="text-xs text-muted-foreground">Total attended</p>
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
-              <>
-                <div className="h-28 rounded-lg bg-muted/20 animate-pulse" />
-                <div className="h-28 rounded-lg bg-muted/20 animate-pulse" />
-                <div className="h-28 rounded-lg bg-muted/20 animate-pulse" />
-              </>
-            )}
-          </div>
-
-          {/* Events Tabs */}
-          <Tabs defaultValue="past" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="past">Past Events</TabsTrigger>
-              <TabsTrigger value="joined">Joined Events</TabsTrigger>
-              <TabsTrigger value="organised">Organised Events</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="past" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">Past Events</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {pastEvents.length} event{pastEvents.length !== 1 ? 's' : ''}
-                </p>
+          {/* Stats Strip */}
+          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden text-white mb-8">
+            <div className="grid grid-cols-3 divide-x divide-white/10">
+              {/* Events Attended */}
+              <div className="flex flex-col items-start px-4 py-3 gap-1 md:px-5 md:py-4">
+                <div className="text-3xl font-extrabold leading-none">{stats.eventsJoined}</div>
+                <div className="text-xs text-gray-500">Attended</div>
+                <div className="text-[10px] text-slate-400">Past events</div>
               </div>
 
+              {/* Events Organized */}
+              <div className="flex flex-col items-start px-4 py-3 gap-1 md:px-5 md:py-4">
+                <div className="text-3xl font-extrabold leading-none">{stats.eventsHosted}</div>
+                <div className="text-xs text-gray-500">Organized</div>
+                <div className="text-[10px] text-slate-400">As host</div>
+              </div>
+
+              {/* Check-ins */}
+              <div className="flex flex-col items-start px-4 py-3 gap-1 md:px-5 md:py-4">
+                <div className="text-3xl font-extrabold leading-none">{stats.totalCheckIns}</div>
+                <div className="text-xs text-gray-500">Check-ins</div>
+                <div className="text-[10px] text-slate-400">All time</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Events Tabs - Line Style */}
+          <div className="flex gap-8 border-b border-white/10 w-full mb-6">
+            <Tabs defaultValue="past" className="w-full">
+              <TabsList className="flex gap-8 border-b border-0 bg-transparent w-full p-0 h-auto">
+                <TabsTrigger value="past" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none">
+                  Past Events {pastEvents.length > 0 && `(${pastEvents.length})`}
+                </TabsTrigger>
+                <TabsTrigger value="joined" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none">
+                  Joined Events {joinedEvents.length > 0 && `(${joinedEvents.length})`}
+                </TabsTrigger>
+                <TabsTrigger value="organised" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none">
+                  Organised Events {organisedEvents.length > 0 && `(${organisedEvents.length})`}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="past" className="space-y-6 mt-6">
               {!isReady ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Array.from({ length: 6 }).map((_, i) => (
@@ -343,14 +323,7 @@ export default function ProfilePage() {
               )}
             </TabsContent>
 
-            <TabsContent value="joined" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">Joined Events</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {joinedEvents.length} event{joinedEvents.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-
+            <TabsContent value="joined" className="space-y-6 mt-6">
               {!isReady ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Array.from({ length: 6 }).map((_, i) => (
@@ -400,14 +373,7 @@ export default function ProfilePage() {
               )}
             </TabsContent>
 
-            <TabsContent value="organised" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">Organised Events</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {organisedEvents.length} event{organisedEvents.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-
+            <TabsContent value="organised" className="space-y-6 mt-6">
               {!isReady ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Array.from({ length: 6 }).map((_, i) => (
@@ -456,8 +422,9 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </main>
 

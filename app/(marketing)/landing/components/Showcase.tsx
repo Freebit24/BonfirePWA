@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 export default function Showcase() {
   // Carousel images: ensure feed screenshot is first
   const SCREENSHOTS = [
-    '/landing/feed-screenshot.png',
+    '/landing/feed-screenshot.webp',
     '/landing/organiser-screenshot.png',
     '/landing/calender-screenshot.png',
   ];

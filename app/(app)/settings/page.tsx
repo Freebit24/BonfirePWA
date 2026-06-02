@@ -75,7 +75,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-transparent">
       <Header />
       
-      <main className="container mx-auto px-4 py-6 pb-20 md:pb-6">
+      <main className="container mx-auto px-4 py-6 pb-32 md:pb-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <motion.div
@@ -103,20 +103,22 @@ export default function SettingsPage() {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
-                <TabsTrigger value="account" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">Account</span>
-                </TabsTrigger>
-                <TabsTrigger value="preferences" className="flex items-center gap-2">
-                  <Heart className="h-4 w-4" />
-                  <span className="hidden sm:inline">Preferences</span>
-                </TabsTrigger>
-                <TabsTrigger value="payment" className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  <span className="hidden sm:inline">Payment</span>
-                </TabsTrigger>
-              </TabsList>
+              <div className="flex gap-8 border-b border-white/10 w-full mb-6 overflow-x-auto no-scrollbar">
+                <TabsList className="flex gap-8 border-b border-0 bg-transparent w-full p-0 h-auto">
+                  <TabsTrigger value="account" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none flex items-center gap-2 whitespace-nowrap">
+                    <User className="h-4 w-4" />
+                    <span>Account</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="preferences" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none flex items-center gap-2 whitespace-nowrap">
+                    <Heart className="h-4 w-4" />
+                    <span>Preferences</span>
+                  </TabsTrigger>
+                  {/* <TabsTrigger value="payment" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    <span className="hidden sm:inline">Payment</span>
+                  </TabsTrigger> */}
+                </TabsList>
+              </div>
 
               {/* Account Settings Tab */}
               <TabsContent value="account" className="mt-6">
@@ -126,13 +128,13 @@ export default function SettingsPage() {
               {/* Preferences Settings Tab */}
               <TabsContent value="preferences" className="mt-6">
                 <div className="grid grid-cols-1 gap-6">
-                  <Card className="border dark:border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="bg-white/5 border border-white/10 rounded-xl">
+                    <CardHeader className="p-6">
+                      <CardTitle className="flex items-center gap-2 text-white">
                         <Settings className="h-4 w-4" /> Preferences
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 p-6 pt-0">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="font-medium">Appearance</p>
@@ -255,15 +257,15 @@ export default function SettingsPage() {
               </TabsContent>
 
               {/* Payment Settings Tab */}
-              <TabsContent value="payment" className="mt-6">
+              {/* <TabsContent value="payment" className="mt-6">
                 <div className="grid grid-cols-1 gap-6">
-                  <Card className="border dark:border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="bg-white/5 border border-white/10 rounded-xl">
+                    <CardHeader className="p-6">
+                      <CardTitle className="flex items-center gap-2 text-white">
                         <Wallet className="h-4 w-4" /> Payments
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 p-6 pt-0">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="font-medium">Default method</p>
@@ -329,7 +331,7 @@ export default function SettingsPage() {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </motion.div>
         </div>

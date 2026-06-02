@@ -44,75 +44,55 @@ export function CategoryFilter({
   return (
     <div className={cn("w-full", className)}>
       <ScrollArea className="w-full">
-        <div className="flex gap-2 pb-2">
-          <Button
-            variant={selectedCategory === null ? 'default' : 'outline'}
-            size="sm"
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide mask-linear-fade lg:gap-3">
+          {/* All Events Chip */}
+          <button
             onClick={() => onCategoryChange(null)}
             className={cn(
-              "whitespace-nowrap",
-              selectedCategory === null && "bg-gradient-to-r from-orange-500 to-red-500 text-white"
+              "px-4 py-2.5 rounded-full text-sm whitespace-nowrap transition-colors min-h-[44px] flex items-center",
+              selectedCategory === null
+                ? "bg-white text-black font-semibold shadow-md"
+                : "bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10"
             )}
           >
             All Events
-          </Button>
+          </button>
           
+          {/* Category Chips */}
           {EVENT_CATEGORIES.map((category) => (
-            <Button
+            <button
               key={category.value}
-              variant={selectedCategory === category.value ? 'default' : 'outline'}
-              size="sm"
               onClick={() => onCategoryChange(category.value)}
               className={cn(
-                "whitespace-nowrap",
-                selectedCategory === category.value && "bg-gradient-to-r from-orange-500 to-red-500 text-white"
+                "px-4 py-2.5 rounded-full text-sm whitespace-nowrap transition-colors flex items-center gap-1.5 min-h-[44px]",
+                selectedCategory === category.value
+                  ? "bg-white text-black font-semibold shadow-md"
+                  : "bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10"
               )}
             >
-              <span className="mr-1">{category.icon}</span>
-              {category.label}
-            </Button>
+              <span className="text-base">{category.icon}</span>
+              <span>{category.label}</span>
+            </button>
           ))}
-        </div>
 
-        {/* Tags row */}
-        {tagsList.length > 0 && (
-          <div className="flex gap-2 items-center pb-2">
-            <div className="text-sm font-medium mr-2">Tags:</div>
-            <div className="flex gap-2 flex-wrap">
-              {tagsList.map(tag => (
-                <Button
-                  key={tag}
-                  size="sm"
-                  variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                  onClick={() => toggleTag(tag)}
-                  className={cn("whitespace-nowrap")}
-                >
-                  {tag}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Date sort controls */}
-        <div className="flex gap-2 items-center pb-2">
-          <div className="text-sm font-medium mr-2">Sort by date:</div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant={dateSort === 'newest' ? 'default' : 'outline'}
-              onClick={() => setDateSort('newest')}
+          {/* Tags Chips */}
+          {tagsList.length > 0 && selectedTags.length === 0 && (
+            <div className="text-slate-500 text-sm mx-1 lg:mx-2">|</div>
+          )}
+          {tagsList.map(tag => (
+            <button
+              key={tag}
+              onClick={() => toggleTag(tag)}
+              className={cn(
+                "px-4 py-2.5 rounded-full text-sm whitespace-nowrap transition-colors min-h-[44px] flex items-center",
+                selectedTags.includes(tag)
+                  ? "bg-white text-black font-semibold shadow-md"
+                  : "bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10"
+              )}
             >
-              Newest
-            </Button>
-            <Button
-              size="sm"
-              variant={dateSort === 'oldest' ? 'default' : 'outline'}
-              onClick={() => setDateSort('oldest')}
-            >
-              Oldest
-            </Button>
-          </div>
+              {tag}
+            </button>
+          ))}
         </div>
       </ScrollArea>
     </div>
