@@ -151,8 +151,8 @@ export default function NotificationsPage() {
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-white font-medium text-sm sm:text-base truncate">{notification.title}</h3>
-                  <span className="text-xs text-gray-500 uppercase tracking-wide truncate">
+                  <h3 className="text-white font-medium text-sm sm:text-base line-clamp-2">{notification.title}</h3>
+                  <span className="text-xs text-gray-500 uppercase tracking-wide hidden sm:block">
                     {notificationLabels[notification.type]}
                   </span>
                 </div>
@@ -210,10 +210,10 @@ export default function NotificationsPage() {
     <div className="min-h-screen bg-transparent">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 pb-20 md:pb-6">
-        <div className="max-w-3xl mx-auto">
+      <main className="container mx-auto px-4 py-6 pb-20 md:pb-6 relative">
+        <div className="max-w-3xl mx-auto relative">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 relative">
             <div>
               <h1 className="text-3xl font-bold mb-2">Notifications</h1>
               <p className="text-gray-600 dark:text-gray-400">
@@ -221,7 +221,7 @@ export default function NotificationsPage() {
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto sm:justify-end">
               {unreadNotifications.length > 0 && (
                 <Button
                   variant="outline"
@@ -233,13 +233,14 @@ export default function NotificationsPage() {
                   Mark all read
                 </Button>
               )}
+
               <Button
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowSettings(true)}
+                className="absolute top-1 right-0 sm:static sm:top-auto sm:right-auto sm:ml-4 text-gray-400 hover:text-white"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
           </div>

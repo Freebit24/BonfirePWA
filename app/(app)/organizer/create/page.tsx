@@ -16,9 +16,10 @@ import { useEventStore } from '@/store/eventStore';
 import { EVENT_CATEGORIES } from '@/utils/constants';
 import { EventCategory } from '@/types';
 import { toast } from 'sonner';
-import { ArrowLeft, MapPin, Calendar, Clock, Users, Lock, X, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Users, Lock, X, Image as ImageIcon, ChevronDown, Sparkles } from 'lucide-react';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { LocationPickerMap } from '@/components/ui/location-picker-map';
+import { AiEventGenerator, AiGeneratedData } from '@/components/organizer/ai-event-generator';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -72,6 +73,7 @@ export default function CreateEventPage() {
   const [loading, setLoading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showAiDialog, setShowAiDialog] = useState(false);
   const [{ start, end }, setTimeDisplay] = useState({
     start: to12Hour(''),
     end: to12Hour(''),
@@ -99,6 +101,26 @@ export default function CreateEventPage() {
   useEffect(() => {
     setTimeDisplay({ start: to12Hour(formData.time), end: to12Hour(formData.end_time) });
   }, [formData.time, formData.end_time]);
+
+  // Get user's location on mount to show on map preview
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData(prev => ({
+            ...prev,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }));
+        },
+        (error) => {
+          console.debug('Geolocation not available or denied:', error);
+          // Keep default coordinates (Jaipur)
+        },
+        { timeout: 5000, enableHighAccuracy: false }
+      );
+    }
+  }, []);
 
   // Warn user before leaving page with unsaved changes
   useEffect(() => {
@@ -283,6 +305,125 @@ export default function CreateEventPage() {
     }
   };
 
+  const forwardGeocode = (geocoder: any, address: string): Promise<any | null> => {
+    return new Promise((resolve) => {
+      geocoder.geocode({ address }, (results: any, status: string) => {
+        if (status === 'OK' && results?.[0]) {
+          resolve(results[0]);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  };
+
+  const reverseGeocode = (geocoder: any, lat: number, lng: number): Promise<string | null> => {
+    return new Promise((resolve) => {
+      geocoder.geocode({ location: { lat, lng } }, (results: any, status: string) => {
+        if (status === 'OK' && results?.[0]?.formatted_address) {
+          resolve(results[0].formatted_address);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  };
+
+  const getBrowserCoords = (): Promise<GeolocationPosition['coords']> => {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve(pos.coords),
+        (err) => reject(err),
+        { timeout: 5000, enableHighAccuracy: false }
+      );
+    });
+  };
+
+  const handleAiGenerate = async (aiData: AiGeneratedData) => {
+    // Merge AI-generated data into form, user can review and edit
+    const updates: Partial<typeof formData> = {
+      ...(aiData.title && { title: aiData.title }),
+      ...(aiData.description && { description: aiData.description }),
+      ...(aiData.category && { category: aiData.category as EventCategory }),
+      ...(aiData.date && { date: aiData.date }),
+      ...(aiData.time && { time: aiData.time }),
+      ...(aiData.end_date && { end_date: aiData.end_date }),
+      ...(aiData.end_time && { end_time: aiData.end_time }),
+      ...(aiData.tags && { tags: aiData.tags.join(', ') }),
+      ...(aiData.max_attendees !== undefined && { max_attendees: String(aiData.max_attendees || '') }),
+      ...(aiData.is_private !== undefined && { is_private: aiData.is_private }),
+      ...(aiData.require_approval !== undefined && { require_approval: aiData.require_approval }),
+    };
+
+    // If location is provided, geocode it to get coordinates
+    if (aiData.location) {
+      const locationText = aiData.location.trim();
+      const wantsCurrent = /^(my location|current location|my current location|here)$/i.test(locationText);
+      const googleMaps = (window as any).google?.maps;
+      const geocoder = googleMaps?.Geocoder ? new googleMaps.Geocoder() : null;
+
+      try {
+        if (wantsCurrent) {
+          if (!navigator.geolocation) {
+            if (geocoder) {
+              const fallback = await reverseGeocode(geocoder, formData.latitude, formData.longitude);
+              if (fallback) updates.location = fallback;
+            }
+            if (!updates.location) {
+              toast.error('Location access is unavailable. Please enable it or enter an address.');
+            }
+            return;
+          }
+
+          const coords = await getBrowserCoords();
+          updates.latitude = coords.latitude;
+          updates.longitude = coords.longitude;
+
+          if (geocoder) {
+            const formatted = await reverseGeocode(geocoder, coords.latitude, coords.longitude);
+            updates.location = formatted || 'Current location';
+          } else {
+            updates.location = 'Current location';
+          }
+        } else if (geocoder) {
+          const result = await forwardGeocode(geocoder, locationText);
+          if (result?.geometry?.location) {
+            const loc = result.geometry.location;
+            updates.location = result.formatted_address || locationText;
+            updates.latitude = loc.lat();
+            updates.longitude = loc.lng();
+          } else {
+            updates.location = locationText;
+          }
+        } else {
+          updates.location = locationText;
+        }
+      } catch (error) {
+        console.warn('Geocoding failed:', error);
+        if (wantsCurrent) {
+          let hasFallback = false;
+          if (geocoder) {
+            const fallback = await reverseGeocode(geocoder, formData.latitude, formData.longitude);
+            if (fallback) {
+              updates.location = fallback;
+              hasFallback = true;
+            }
+          }
+          if (!updates.location) {
+            toast.error('Unable to fetch your current location. Please allow location access or type your address.');
+          } else if (!hasFallback) {
+            toast.message?.('Using your last known map position. You can drag the pin to adjust.');
+          }
+        } else {
+          updates.location = locationText;
+        }
+      }
+    }
+
+    setFormData(prev => ({ ...prev, ...updates }));
+    setHasUnsavedChanges(true);
+  };
+
   const handleTimeInput = (field: 'time' | 'end_time', display: string, meridiem: 'AM' | 'PM') => {
     const value24 = to24Hour(display, meridiem);
     const next = {
@@ -374,12 +515,31 @@ export default function CreateEventPage() {
     <div className="min-h-screen bg-[#0f0f11] text-zinc-300">
       <Header />
 
+      {/* AI Event Generator Dialog */}
+      <AiEventGenerator
+        isOpen={showAiDialog}
+        onOpenChange={setShowAiDialog}
+        onGenerate={handleAiGenerate}
+      />
+
       <main className="max-w-7xl mx-auto px-6 py-8 pb-24 md:pb-10">
         <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" onClick={handleBack} className="text-zinc-400 hover:text-white">
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
           </Button>
-          <h1 className="text-xl md:text-2xl font-bold text-white">Create New Event</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAiDialog(true)}
+              className="border-orange-500/30 hover:bg-orange-500/10 hover:border-orange-500/50 text-orange-400"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Assist
+            </Button>
+            <h1 className="text-xl md:text-2xl font-bold text-white">Create New Event</h1>
+          </div>
         </div>
 
         <Card className="bg-zinc-900/40 border-zinc-800">

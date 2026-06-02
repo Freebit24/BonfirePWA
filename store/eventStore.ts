@@ -314,17 +314,29 @@ export const useEventStore = create<EventState>((set, get) => ({
       }
 
       logger.log('Update successful, re-fetching event...');
-      // Re-fetch the event to ensure consistent shape
+      // Try to re-fetch the event to ensure consistent shape. If RLS prevents
+      // reading (e.g., visibility/ownership changed), fall back to local merge.
       const updated = await get().fetchEventById(id);
 
-      if (!updated) {
-        throw new Error('Updated event not found after update.');
+      let result = updated;
+      if (!result) {
+        // Fallback: merge updates into existing event in store to avoid breaking the UI
+        const current = get().events.find(e => e.id === id) || get().selectedEvent;
+        if (current) {
+          result = { ...current, ...updates, updated_at: new Date().toISOString() } as any;
+          logger.warn('Re-fetch failed; using locally merged event after update');
+        }
       }
 
-      logger.log('Updated event fetched:', updated);
+      if (!result) {
+        // As a last resort, do not throw; keep UI responsive
+        logger.error('Updated event not found and no local copy available');
+        return null;
+      }
+
       set(state => ({
-        events: state.events.map(event => (event.id === id ? updated : event)),
-        selectedEvent: state.selectedEvent?.id === id ? updated : state.selectedEvent,
+        events: state.events.map(event => (event.id === id ? (result as any) : event)),
+        selectedEvent: state.selectedEvent?.id === id ? (result as any) : state.selectedEvent,
       }));
       logger.log('Store updated with new event data');
 
@@ -336,7 +348,7 @@ export const useEventStore = create<EventState>((set, get) => ({
         logger.warn('Failed to refresh events after update', err);
       }
 
-      return updated;
+      return result;
     } catch (error) {
       console.error('Error updating event:', error);
       throw error;

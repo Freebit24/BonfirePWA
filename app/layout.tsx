@@ -1,11 +1,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import AuthInitializer from '@/app/(app)/_components/auth-initializer';
 import FramerProvider from '@/components/FramerProvider';
 import { Footer } from '@/components/common/footer';
+import AnalyticsTracker from './analytics-tracker';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -34,8 +36,28 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {gaId ? (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', { page_path: window.location.pathname });
+              `}
+            </Script>
+          </>
+        ) : null}
+      </head>
       <body
         className={`${inter.className} bg-neutral-950 text-white selection:bg-orange-500/30`}
         suppressHydrationWarning
@@ -48,10 +70,12 @@ export default function RootLayout({
         
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
+          <AnalyticsTracker />
           <AuthInitializer />
           <FramerProvider>
             <div className="relative z-10">

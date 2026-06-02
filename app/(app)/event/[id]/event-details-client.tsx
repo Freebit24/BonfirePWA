@@ -55,6 +55,7 @@ import PrivateEventControls from '@/components/organizer/private-event-controls'
 import { Input } from '@/components/ui/input';
 import { MailPlus, X } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { GoogleMapPreview } from '@/components/map/GoogleMapPreview';
 
 export default function EventDetailsClient({
   eventId,
@@ -94,6 +95,7 @@ logger.log('EVENT ID RECEIVED:', eventId);
   const [inviting, setInviting] = useState(false);
   const [invites, setInvites] = useState<any[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
 const joinIntent = searchParams?.get('join');
 const shouldAutoJoin =
@@ -627,7 +629,308 @@ const shouldAutoJoin =
         <Header />
 
         <main className="pb-20 md:pb-6">
-          {/* Hero Image - Premium cinematic design with rounded corners */}
+          {/* MOBILE VIEW: Hero Section with Overlay */}
+          <div className="block md:hidden">
+            <div className="relative h-72 overflow-hidden bg-gradient-to-br from-orange-500 via-red-500 to-pink-600">
+              {selectedEvent.image_url ? (
+                <>
+                  {/* Blurred background */}
+                  <Image
+                    src={selectedEvent.image_url}
+                    alt={selectedEvent.title}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover blur-md scale-110"
+                    onError={() => {
+                      logger.warn('Hero image failed to load:', selectedEvent.image_url);
+                    }}
+                  />
+                  {/* Semi-transparent overlay */}
+                  <div className="absolute inset-0 bg-black/30" />
+                  {/* Main image */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Image
+                      src={selectedEvent.image_url}
+                      alt={selectedEvent.title}
+                      fill
+                      priority
+                      sizes="100vw"
+                      className="object-contain"
+                      onError={() => {
+                        logger.warn('Event image failed to load:', selectedEvent.image_url);
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-500 via-red-500 to-pink-600">
+                  <span className="text-7xl">{category?.icon || '🔥'}</span>
+                </div>
+              )}
+
+              {/* Dark gradient overlay from bottom */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+              {/* Top-left badges with status and privacy */}
+              <div className="absolute top-4 left-4 flex gap-2">
+                <Badge 
+                  variant={status === 'Today' ? 'default' : 'secondary'}
+                  className="backdrop-blur-xl bg-white/20 border-white/30 text-white shadow-lg text-xs"
+                >
+                  {status}
+                </Badge>
+                {selectedEvent.is_private && (
+                  <Badge 
+                    variant="secondary" 
+                    className="backdrop-blur-xl bg-purple-500/30 border-purple-300/30 text-white shadow-lg text-xs"
+                  >
+                    <Lock className="h-3 w-3 mr-1" />
+                    Private
+                  </Badge>
+                )}
+              </div>
+
+              {/* Top-right action buttons */}
+              <div className="absolute top-4 right-4 flex gap-2">
+                {user && selectedEvent.organizer_id === user.id && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-9 w-9 rounded-full p-0 backdrop-blur-xl bg-white/20 border-white/30 hover:bg-white/30 shadow-lg"
+                    onClick={() => router.push(`/organizer/edit/${selectedEvent.id}`)}
+                  >
+                    <Edit className="h-4 w-4 text-white" />
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-9 w-9 rounded-full p-0 backdrop-blur-xl bg-white/20 border-white/30 hover:bg-white/30 shadow-lg"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-4 w-4 text-white" />
+                </Button>
+              </div>
+
+              {/* Bottom: Category Pill, Title, and Date/Time */}
+              <div className="absolute bottom-0 left-0 right-0 px-4 py-5 space-y-2.5">
+                {/* Category Pill */}
+                <Badge 
+                  variant="secondary"
+                  className="backdrop-blur-xl bg-white/20 border-white/30 text-white shadow-lg w-fit text-xs"
+                >
+                  {category?.icon && <span className="mr-1.5">{category.icon}</span>}
+                  {category?.label || selectedEvent.category}
+                </Badge>
+
+                {/* Event Title */}
+                <h1 className="text-xl font-bold text-white break-words leading-tight">
+                  {selectedEvent.title}
+                </h1>
+
+                {/* Date and Time Range */}
+                <div className="flex items-start gap-2 text-white">
+                  <CalendarClock className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs font-medium leading-snug">
+                    {selectedEvent.end_date || selectedEvent.end_time ? (
+                      <>
+                        <div>{formatDate(selectedEvent.date)} • {formatTime(selectedEvent.time)}</div>
+                        <div className="text-slate-300">
+                          to {formatDate(selectedEvent.end_date || selectedEvent.date)} • {formatTime(selectedEvent.end_time || selectedEvent.time)}
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        {formatDate(selectedEvent.date)} • {formatTime(selectedEvent.time)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Location Card */}
+            <div className="px-4 py-3 space-y-2.5">
+              <div className="flex gap-3 items-start">
+                {/* Left: Address and Host */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start gap-2 mb-2">
+                    <MapPin className="h-3.5 w-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xs font-medium text-slate-100 break-words leading-snug">
+                        {selectedEvent.location}
+                      </h3>
+                    </div>
+                  </div>
+                  {/* Organizer Info with Avatar */}
+                  {organizerProfile && (
+                    <button
+                      onClick={handleOpenOrganizerProfile}
+                      disabled={loadingOrganizerProfile}
+                      className="flex items-center gap-1.5 mt-2 group hover:opacity-80 transition-opacity disabled:cursor-not-allowed"
+                      aria-label={`View profile of ${organizerName}`}
+                    >
+                      <Avatar className="h-5 w-5 flex-shrink-0">
+                        <AvatarImage src={organizerProfile.avatar_url || undefined} />
+                        <AvatarFallback className="bg-gradient-to-br from-orange-400 to-red-500 text-white text-xs font-semibold">
+                          {organizerProfile.full_name?.[0]?.toUpperCase() || organizerProfile.email?.[0]?.toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-xs text-slate-300 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span className="text-slate-400">Hosted by </span>
+                        <span className="font-medium group-hover:text-slate-100 transition-colors">
+                          {organizerName}
+                        </span>
+                      </p>
+                    </button>
+                  )}
+                </div>
+
+                {/* Right: Map Preview - Google JS API (no iframe clutter) */}
+                <button
+                  onClick={handleGetDirections}
+                  className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 bg-gradient-to-br from-orange-500/10 to-red-500/10 relative hover:border-white/20 transition-colors"
+                  aria-label="View location on map"
+                >
+                  <GoogleMapPreview
+                    lat={selectedEvent.latitude}
+                    lng={selectedEvent.longitude}
+                    className="w-20 h-20"
+                    zoom={15}
+                    clickable={false}
+                    marker
+                  />
+                  {/* Hover overlay for visual feedback */}
+                  <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                </button>
+              </div>
+
+              {/* Mobile Description Section with Toggle */}
+              <div className="mt-4">
+                <div className="rounded-xl p-4 bg-white/10 backdrop-blur-xl border border-white/10">
+                  <p className={cn(
+                    "text-sm leading-relaxed whitespace-pre-wrap break-words text-slate-200",
+                    !showFullDescription && "line-clamp-3"
+                  )}>
+                    {selectedEvent.description}
+                  </p>
+                  {selectedEvent.description && selectedEvent.description.length > 150 && (
+                    <button
+                      onClick={() => setShowFullDescription(!showFullDescription)}
+                      className="mt-3 text-xs text-orange-500 hover:text-orange-400 font-medium transition-colors"
+                    >
+                      {showFullDescription ? 'Show Less' : 'Show More'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Mobile Action Buttons */}
+              <div className="mt-4 flex gap-2">
+                {user?.id === selectedEvent.organizer_id ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex-1 bg-slate-800 text-slate-400 border border-slate-700 cursor-default py-2.5 rounded-lg font-medium text-sm text-center"
+                  >
+                    Hosting
+                  </button>
+                ) : (
+                  <Button
+                    className={cn(
+                      "flex-1 transition-all duration-200",
+                      isJoined || attendeeStatus === 'approved'
+                        ? "bg-green-500 hover:bg-green-600 text-white"
+                        : attendeeStatus === 'pending'
+                        ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                        : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                    )}
+                    onClick={handleJoinEvent}
+                    disabled={
+                      joining || 
+                      attendeeStatus === 'pending' || 
+                      attendeeStatus === 'rejected' ||
+                      (!isJoined && !!selectedEvent.max_attendees && selectedEvent.attendees_count >= selectedEvent.max_attendees)
+                    }
+                  >
+                    {joining ? (
+                      <>
+                        <LoadingSpinner size="sm" className="mr-2" />
+                        {selectedEvent.is_private ? 'Requesting...' : 'Joining...'}
+                      </>
+                    ) : isJoined || attendeeStatus === 'approved' ? (
+                      'Joined'
+                    ) : attendeeStatus === 'pending' ? (
+                      <>
+                        <Clock className="h-4 w-4 mr-2" />
+                        Request Pending
+                      </>
+                    ) : attendeeStatus === 'rejected' ? (
+                      'Request Rejected'
+                    ) : selectedEvent.max_attendees && selectedEvent.attendees_count >= selectedEvent.max_attendees ? (
+                      'Event Full'
+                    ) : selectedEvent.is_private ? (
+                      <>
+                        <Lock className="h-4 w-4 mr-2" />
+                        Request to Join
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Join Event
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-white/20 text-slate-100 text-sm"
+                  onClick={handleViewAttendees}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  View Attendees ({selectedEvent.attendees_count})
+                </Button>
+              </div>
+
+              {/* Tags Section */}
+              {selectedEvent.tags.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-xs font-semibold mb-2 text-slate-300">Tags</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedEvent.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="border-white/20 text-slate-300 text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Private Event Management (Mobile) */}
+              {selectedEvent.is_private && user?.id === selectedEvent.organizer_id && (
+                <div className="mt-6">
+                  <div className="rounded-xl p-4 bg-white/10 backdrop-blur-xl border border-white/10">
+                    <h3 className="text-base font-semibold mb-2 flex items-center gap-2 text-slate-100">
+                      <Lock className="h-4 w-4" />
+                      Private Event Management
+                    </h3>
+                    <p className="text-xs text-slate-300 mb-4">
+                      Manage pending join requests, invite links, and direct invites.
+                    </p>
+                    <PrivateEventControls eventId={selectedEvent.id} organizerId={selectedEvent.organizer_id} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* DESKTOP VIEW: Original layout */}
+          <div className="hidden md:block">
+            {/* Hero Image - Premium cinematic design with rounded corners */}
           <div className="container mx-auto px-3 sm:px-4 pt-6">
             <div className="relative h-[50vh] md:h-[60vh] overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 shadow-2xl">
               {selectedEvent.image_url ? (
@@ -763,17 +1066,17 @@ const shouldAutoJoin =
                 {/* Location Section */}
                 <div className="rounded-2xl p-6 border border-white/10 bg-white/10 backdrop-blur-xl mb-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    {/* Map on left */}
+                    {/* Map on left (Google JS API preview without iframe clutter) */}
                     <div className="relative h-56 rounded-xl overflow-hidden border border-white/10">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        style={{ border: 0 }}
-                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&q=${selectedEvent.latitude},${selectedEvent.longitude}&zoom=15`}
-                        allowFullScreen
+                      <GoogleMapPreview
+                        lat={selectedEvent.latitude}
+                        lng={selectedEvent.longitude}
+                        className="absolute inset-0"
+                        zoom={15}
+                        clickable={false}
+                        marker
                       />
-                      <div 
+                      <div
                         className="absolute inset-0 cursor-pointer"
                         onClick={handleGetDirections}
                       />
@@ -1035,6 +1338,7 @@ const shouldAutoJoin =
             )}
           </motion.div>
         </div>
+          </div>
         </main>
 
         <BottomNav />

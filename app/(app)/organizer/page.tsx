@@ -36,6 +36,8 @@ export default function OrganizerPage() {
   const [joinedEvents, setJoinedEvents] = useState<Record<string, boolean>>({});
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [eventToLeave, setEventToLeave] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
 
   // Filter events organized by current user
   const myEvents = events.filter(event => event.organizer_id === user?.id);
@@ -76,14 +78,21 @@ export default function OrganizerPage() {
     checkJoinedStatus();
   }, [user, myEvents.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleDeleteEvent = async (eventId: string) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await deleteEvent(eventId);
-        toast.success('Event deleted successfully');
-      } catch (error) {
-        toast.error('Failed to delete event');
-      }
+  const handleDeleteEvent = (eventId: string) => {
+    setEventToDelete(eventId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
+    try {
+      await deleteEvent(eventToDelete);
+      toast.success('Event deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete event');
+    } finally {
+      setIsDeleteModalOpen(false);
+      setEventToDelete(null);
     }
   };
 
@@ -310,6 +319,50 @@ export default function OrganizerPage() {
       </main>
 
       <BottomNav />
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+          onClick={() => setIsDeleteModalOpen(false)}
+        >
+          <div 
+            className="bg-[#1E1E1E] border border-white/10 p-6 rounded-xl w-full max-w-sm shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Icon */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="h-12 w-12 bg-red-500/10 rounded-full flex items-center justify-center">
+                <Trash2 className="h-6 w-6 text-red-500" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-xl font-bold text-white text-center mb-2">Delete Event?</h3>
+            
+            {/* Description */}
+            <p className="text-sm text-gray-400 text-center mb-6">
+              Are you sure you want to delete this event? This action cannot be undone.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="flex-1 bg-transparent hover:bg-white/5 text-gray-300 px-4 py-2 rounded-lg transition-colors min-h-[44px]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors min-h-[44px]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>

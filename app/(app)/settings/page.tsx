@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/store/authStore';
-import { useTheme } from 'next-themes';
 import {
   User,
   Heart,
@@ -31,10 +30,8 @@ const PREFERENCES_STORAGE_KEY = 'bonfire:preferences';
 
 export default function SettingsPage() {
   const { user } = useAuthStore();
-  const { setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('account');
   const [preferences, setPreferences] = useState({
-    theme: 'system' as 'light' | 'dark' | 'system',
     pushNotifications: true,
     emailNotifications: true,
     smsNotifications: false,
@@ -58,13 +55,10 @@ export default function SettingsPage() {
     try {
       const parsed = JSON.parse(stored);
       setPreferences((prev) => ({ ...prev, ...parsed }));
-      if (parsed.theme) {
-        setTheme(parsed.theme);
-      }
     } catch (err) {
       console.error('Failed to parse stored preferences', err);
     }
-  }, [setTheme]);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -135,29 +129,6 @@ export default function SettingsPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 p-6 pt-0">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium">Appearance</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Switch between light, dark, or follow system.</p>
-                        </div>
-                        <Select
-                          value={preferences.theme}
-                          onValueChange={(value: 'light' | 'dark' | 'system') => {
-                            setPreferences((prev) => ({ ...prev, theme: value }));
-                            setTheme(value);
-                          }}
-                        >
-                          <SelectTrigger className="w-36">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="light">Light</SelectItem>
-                            <SelectItem value="dark">Dark</SelectItem>
-                            <SelectItem value="system">System</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
                       <div className="space-y-3 rounded-lg border border-dashed dark:border-gray-800 p-3">
                         <div className="flex items-center gap-2">
                           <Bell className="h-4 w-4" />

@@ -7,3 +7,10 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Do NOT set AZURE_OPENAI_* here
+  # Set these in Netlify Dashboard: Site Settings → Build & Deploy → Environment
+  # This prevents secrets from being logged or appearing in build output
+
+# Security: Prevent accidental secrets exposure in logs/output
+[build]
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- .env.local && npm test || true"

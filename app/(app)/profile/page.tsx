@@ -190,7 +190,7 @@ export default function ProfilePage() {
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
-                        <h1 className="text-xl font-bold text-white mb-2 truncate md:text-4xl md:mb-3">
+                        <h1 className="text-xl font-bold text-white mb-2 pr-8 break-words md:text-4xl md:mb-3">
                           {user.user_metadata?.name || 'User'}
                         </h1>
                         <div className="flex flex-wrap gap-1.5 md:gap-2">
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                         variant="ghost" 
                         size="icon" 
                         onClick={() => router.push('/settings')} 
-                        className="h-10 w-10 flex-shrink-0 hover:opacity-70 transition-opacity bg-transparent p-2 md:h-12 md:w-12"
+                        className="absolute top-5 right-5 text-gray-400 hover:text-white bg-transparent p-2"
                       >
                         <Settings className="h-4 w-4 md:h-6 md:w-6" />
                       </Button>
@@ -259,16 +259,16 @@ export default function ProfilePage() {
           </div>
 
           {/* Events Tabs - Line Style */}
-          <div className="flex gap-8 border-b border-white/10 w-full mb-6">
+          <div className="border-b border-white/10 w-full mb-6">
             <Tabs defaultValue="past" className="w-full">
-              <TabsList className="flex gap-8 border-b border-0 bg-transparent w-full p-0 h-auto">
-                <TabsTrigger value="past" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none">
+              <TabsList className="flex gap-8 overflow-x-auto no-scrollbar w-full p-0 h-auto px-4">
+                <TabsTrigger value="past" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none whitespace-nowrap flex-shrink-0">
                   Past Events {pastEvents.length > 0 && `(${pastEvents.length})`}
                 </TabsTrigger>
-                <TabsTrigger value="joined" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none">
+                <TabsTrigger value="joined" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none whitespace-nowrap flex-shrink-0">
                   Joined Events {joinedEvents.length > 0 && `(${joinedEvents.length})`}
                 </TabsTrigger>
-                <TabsTrigger value="organised" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none">
+                <TabsTrigger value="organised" className="px-0 py-3 border-0 bg-transparent text-gray-400 hover:text-white data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent rounded-none whitespace-nowrap flex-shrink-0">
                   Organised Events {organisedEvents.length > 0 && `(${organisedEvents.length})`}
                 </TabsTrigger>
               </TabsList>

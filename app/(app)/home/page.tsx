@@ -83,7 +83,10 @@ export default function HomePage() {
   const [locationPermission, setLocationPermission] =
     useState<"granted" | "denied" | "prompt" | null>(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  const [showMapSideMenu, setShowMapSideMenu] = useState(true);
+  const [showMapSideMenu, setShowMapSideMenu] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
   const [visibleMapEvents, setVisibleMapEvents] = useState<any[]>([]);
   const visibleEventsDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -139,6 +142,23 @@ export default function HomePage() {
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const handleChange = (event: MediaQueryListEvent) => setShowMapSideMenu(event.matches);
+
+    setShowMapSideMenu(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {

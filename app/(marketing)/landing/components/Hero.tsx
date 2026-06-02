@@ -19,7 +19,7 @@ export default function Hero() {
   };
 
   const handleCreateEvent = () => {
-    router.push('/home/create');
+    router.push('/organizer/create');
   };
 
   const handleHowItWorks = () => {

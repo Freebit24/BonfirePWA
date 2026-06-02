@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ export default function LoginClient() {
         className="w-full max-w-md relative z-10"
       >
         <Card className="border-0 shadow-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-md">
-          <CardHeader className="text-center space-y-3 pb-8 pt-8">
+          <CardHeader className="text-center space-y-2 pb-4 pt-6">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -69,28 +70,28 @@ export default function LoginClient() {
               <Image
                 src="/app/bonfire-logo.png"
                 alt="Bonfire Logo"
-                width={140}
-                height={140}
+                width={100}
+                height={100}
                 priority
                 quality={100}
                 className="drop-shadow-xl"
               />
             </motion.div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 bg-clip-text text-transparent !mt-2">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 bg-clip-text text-transparent !mt-1">
               Welcome Back to Bonfire
             </CardTitle>
-            <CardDescription className="text-base">
+            <CardDescription className="text-sm">
               Your community is waiting — reconnect with amazing local events
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6 px-8 pb-10">
+          <CardContent className="space-y-4 px-6 pb-6">
             {/* Features */}
-            <div className="space-y-3 bg-gradient-to-br from-orange-50/50 to-red-50/50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-4 border border-orange-200/50 dark:border-orange-800/30">
-              <div className="flex items-start gap-3">
+            <div className="space-y-2 bg-gradient-to-br from-orange-50/50 to-red-50/50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-3 border border-orange-200/50 dark:border-orange-800/30">
+              <div className="flex items-start gap-2">
                 <div className="mt-0.5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <span className="text-white text-lg">🔥</span>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                    <span className="text-white text-base">🔥</span>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -98,10 +99,10 @@ export default function LoginClient() {
                   <p className="text-xs text-gray-600 dark:text-gray-400">Find gatherings, meetups, and experiences near you</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2">
                 <div className="mt-0.5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <span className="text-white text-lg">🗓️</span>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                    <span className="text-white text-base">🗓️</span>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -109,10 +110,10 @@ export default function LoginClient() {
                   <p className="text-xs text-gray-600 dark:text-gray-400">Create and manage your own community gatherings</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2">
                 <div className="mt-0.5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    <span className="text-white text-lg">👥</span>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                    <span className="text-white text-base">👥</span>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -123,11 +124,11 @@ export default function LoginClient() {
             </div>
 
             {/* Sign in button */}
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
-                className="w-full py-6 text-base font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all border-2"
+                className="w-full py-5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all border-2"
                 onClick={handleGoogleSignIn}
               >
                 <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
@@ -154,6 +155,17 @@ export default function LoginClient() {
                 Secure sign-in powered by Google
               </p>
             </div>
+
+            {/* Sign up link */}
+            <p className="mt-3 text-center text-sm text-gray-400">
+              Don't have an account?
+              <Link
+                href="/signup"
+                className="font-medium text-orange-500 hover:text-orange-400 transition-colors cursor-pointer ml-1"
+              >
+                Create one
+              </Link>
+            </p>
           </CardContent>
         </Card>
       </motion.div>

@@ -212,48 +212,48 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Join Requests */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5" />
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <UserPlus className="h-4 w-4 md:h-5 md:w-5" />
                 Pending Join Requests
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs md:text-sm mt-1">
                 Approve or reject users who want to join your private event
               </CardDescription>
             </div>
-            <Badge variant="secondary">{joinRequests.length}</Badge>
+            <Badge variant="secondary" className="self-start sm:self-center">{joinRequests.length}</Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           {joinRequests.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No pending join requests</p>
+            <div className="text-center py-6 md:py-8 text-gray-500 dark:text-gray-400">
+              <Users className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm md:text-base">No pending join requests</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-96">
+            <ScrollArea className="max-h-80 md:max-h-96">
               <div className="space-y-3">
                 {joinRequests.map((request) => (
                   <motion.div
                     key={request.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 md:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
                   >
-                    <div className="flex items-center gap-3 flex-1">
-                      <Avatar>
+                    <div className="flex items-center gap-3 flex-1 w-full">
+                      <Avatar className="h-10 w-10">
                         <AvatarFallback>
                           {request.userName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{request.userName}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base truncate">{request.userName}</p>
+                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate">
                           {request.userEmail}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-1">
@@ -262,24 +262,25 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                       <Button
                         size="sm"
                         variant="default"
-                        className="bg-green-500 hover:bg-green-600"
+                        className="bg-green-500 hover:bg-green-600 flex-1 sm:flex-none text-xs"
                         onClick={() => handleApproveRequest(request.id)}
                         disabled={processingRequest === request.id}
                       >
-                        <Check className="h-4 w-4 mr-1" />
+                        <Check className="h-3 w-3 md:h-4 md:w-4 mr-1" />
                         Approve
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
+                        className="flex-1 sm:flex-none text-xs"
                         onClick={() => handleRejectRequest(request.id)}
                         disabled={processingRequest === request.id}
                       >
-                        <X className="h-4 w-4 mr-1" />
+                        <X className="h-3 w-3 md:h-4 md:w-4 mr-1" />
                         Reject
                       </Button>
                     </div>
@@ -293,34 +294,34 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
 
       {/* Invite Links */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Link2 className="h-5 w-5" />
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Link2 className="h-4 w-4 md:h-5 md:w-5" />
                 Invite Links
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs md:text-sm mt-1">
                 Create and manage shareable invite links for your private event
               </CardDescription>
             </div>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Link2 className="h-4 w-4 mr-2" />
+            <Button onClick={() => setShowCreateDialog(true)} size="sm" className="text-xs w-full sm:w-auto">
+              <Link2 className="h-3 w-3 md:h-4 md:w-4 mr-2" />
               Create Link
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           {inviteLinks.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Link2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p className="mb-4">No invite links created yet</p>
-              <Button onClick={() => setShowCreateDialog(true)} variant="outline">
+            <div className="text-center py-6 md:py-8 text-gray-500 dark:text-gray-400">
+              <Link2 className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-2 opacity-50" />
+              <p className="mb-4 text-sm md:text-base">No invite links created yet</p>
+              <Button onClick={() => setShowCreateDialog(true)} variant="outline" size="sm" className="text-xs">
                 Create Your First Invite Link
               </Button>
             </div>
           ) : (
-            <ScrollArea className="max-h-96">
+            <ScrollArea className="max-h-80 md:max-h-96">
               <div className="space-y-3">
                 {inviteLinks.map((invite) => {
                   const status = getInviteStatus(invite);
@@ -329,50 +330,54 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
                       key={invite.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3"
+                      className="p-3 md:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className={status.color}>
+                      <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                        <div className="flex-1 w-full">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <Badge variant="outline" className={`${status.color} text-xs`}>
                               {status.label}
                             </Badge>
                             {invite.is_single_use && (
-                              <Badge variant="secondary">Single Use</Badge>
+                              <Badge variant="secondary" className="text-xs">Single Use</Badge>
                             )}
                             {invite.max_uses && (
-                              <Badge variant="secondary">
+                              <Badge variant="secondary" className="text-xs">
                                 {invite.current_uses}/{invite.max_uses} uses
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>Created {formatDate(invite.created_at)}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                              <span>Created {formatDate(invite.created_at)}</span>
+                            </div>
                             {invite.expires_at && (
-                              <>
-                                <span>•</span>
-                                <Clock className="h-3.5 w-3.5" />
+                              <div className="flex items-center gap-2">
+                                <span className="hidden sm:inline">•</span>
+                                <Clock className="h-3 w-3 md:h-3.5 md:w-3.5" />
                                 <span>Expires {formatDate(invite.expires_at)}</span>
-                              </>
+                              </div>
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto">
                           <Button
                             size="sm"
                             variant="outline"
+                            className="flex-1 sm:flex-none text-xs"
                             onClick={() => handleCopyInvite(invite.token)}
                           >
-                            <Copy className="h-4 w-4 mr-1" />
+                            <Copy className="h-3 w-3 md:h-4 md:w-4 mr-1" />
                             Copy
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
+                            className="text-xs"
                             onClick={() => setDeleteInviteId(invite.id)}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
                           </Button>
                         </div>
                       </div>
@@ -390,19 +395,19 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
 
       {/* Create Invite Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] max-w-[calc(100vw-2rem)] mx-4">
           <DialogHeader>
-            <DialogTitle>Create Invite Link</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base md:text-lg">Create Invite Link</DialogTitle>
+            <DialogDescription className="text-xs md:text-sm">
               Configure how this invite link will work
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Single Use</Label>
-                <p className="text-sm text-gray-500">Link can only be used once</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5 flex-1">
+                <Label className="text-sm">Single Use</Label>
+                <p className="text-xs text-gray-500">Link can only be used once</p>
               </div>
               <Switch
                 checked={inviteOptions.isSingleUse}
@@ -413,7 +418,7 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
             </div>
 
             <div className="space-y-2">
-              <Label>Expires In (hours)</Label>
+              <Label className="text-sm">Expires In (hours)</Label>
               <Input
                 type="number"
                 min="0"
@@ -425,6 +430,7 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
                     expiresInHours: parseInt(e.target.value) || 0 
                   })
                 }
+                className="text-sm"
               />
               <p className="text-xs text-gray-500">
                 Leave as 0 for links that never expire
@@ -432,7 +438,7 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
             </div>
 
             <div className="space-y-2">
-              <Label>Maximum Uses</Label>
+              <Label className="text-sm">Maximum Uses</Label>
               <Input
                 type="number"
                 min="0"
@@ -444,6 +450,7 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
                     maxUses: parseInt(e.target.value) || 0 
                   })
                 }
+                className="text-sm"
               />
               <p className="text-xs text-gray-500">
                 Leave as 0 for unlimited uses
@@ -451,11 +458,11 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="w-full sm:w-auto text-xs" size="sm">
               Cancel
             </Button>
-            <Button onClick={handleCreateInvite} disabled={creating}>
+            <Button onClick={handleCreateInvite} disabled={creating} className="w-full sm:w-auto text-xs" size="sm">
               {creating ? (
                 <>
                   <LoadingSpinner size="sm" className="mr-2" />
@@ -463,7 +470,7 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
                 </>
               ) : (
                 <>
-                  <Link2 className="h-4 w-4 mr-2" />
+                  <Link2 className="h-3 w-3 md:h-4 md:w-4 mr-2" />
                   Create Link
                 </>
               )}
@@ -477,18 +484,18 @@ export default function PrivateEventControls({ eventId, organizerId }: PrivateEv
         open={deleteInviteId !== null} 
         onOpenChange={(open) => !open && setDeleteInviteId(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-[425px] max-w-[calc(100vw-2rem)] mx-4">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Invite Link?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base md:text-lg">Delete Invite Link?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs md:text-sm">
               This invite link will no longer work. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto text-xs m-0">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteInviteId && handleDeleteInvite(deleteInviteId)}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 w-full sm:w-auto text-xs"
             >
               Delete
             </AlertDialogAction>
