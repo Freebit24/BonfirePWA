@@ -1,57 +1,174 @@
-# Bonfire PWA
+# Bonfire 🔥
 
-Bonfire is a location-first social platform for discovering, creating, and joining real-world events. This repository contains the Next.js PWA that powers the discovery map, event details, authentication, organizer flows, and supporting UI.
+**AI-Powered Community & Event Discovery Platform**
 
-## Product Direction
+Version: 0.1.0 — 2026-06-03
 
-Bonfire is built around a few core principles:
+Bonfire is a location-first platform that helps people discover, create, and join real-world events through communities. It replaces fragmented event discovery across messaging apps, social media, and offline channels with a unified experience designed for real-world coordination.
 
-- Location over followers
-- Intent over passive scrolling
-- Open by default
-- Minimal friction to join or host
-- Real-world outcomes over in-app engagement
+**Live Demo:** https://bonfire-web.netlify.app/
 
-The app centers on three connected concepts:
+---
 
-- Users join communities and attend events.
-- Communities provide recurring retention and optional ownership.
-- Events are time-bound, geo-aware, and easy to browse on a map.
+## Overview
+
+Traditional event discovery is fragmented.
+
+Events are often buried inside WhatsApp groups, Instagram stories, Discord servers, posters, and word-of-mouth networks. As a result, people miss opportunities to connect with nearby communities and attend events they care about.
+
+Bonfire solves this by providing:
+
+- 📍 Location-based event discovery
+- 🤖 AI-assisted event creation
+- 👥 Community-driven engagement
+- ⚡ Real-time event participation
+- 📱 Mobile-first Progressive Web App experience
+
+The platform is designed around one core idea:
+
+> Location should matter more than follower count.
+
+---
+
+## Key Features
+
+### AI-Powered Event Creation
+
+Create events using natural language prompts. Users can describe an event in plain English, and Bonfire automatically generates event details to reduce setup friction (see `components/organizer/ai-event-generator` and the `/api/ai` endpoint).
+
+---
+
+### Location-Based Discovery
+
+Discover events happening nearby through geospatial search.
+
+- Radius-based querying
+- Nearby event recommendations
+- Location-aware event browsing
+
+---
+
+### Community System
+
+Communities serve as persistent spaces where members can organize recurring events.
+
+Features include:
+
+- Community creation
+- Member management
+- Community-based event hosting
+- Long-term engagement loops
+
+---
+
+### Event Management
+
+Users can:
+
+- Create events
+- Join events
+- Track attendance
+- Manage event details
+- View event information in real time
+
+---
+
+### Real-Time Updates
+
+Bonfire supports:
+
+- Live attendee counts
+- Event updates
+- Real-time synchronization across users
+
+---
+
+### Progressive Web App (PWA)
+
+Mobile-first experience with:
+
+- Installable application
+- Fast loading
+- Responsive design
+- Native-like user experience
+
+---
+
+## Product Philosophy
+
+Bonfire is built around a few simple principles:
+
+### Location > Followers
+
+Events should be discovered because they are relevant, not because users follow the organizer.
+
+### Intent > Passive Scrolling
+
+The platform prioritizes meaningful participation over endless content consumption.
+
+### Communities Drive Retention
+
+Events are temporary. Communities create long-term engagement.
+
+### Real-World Outcomes Matter
+
+Success is measured by people showing up and connecting in real life.
+
+---
+
+## Architecture
+
+### Core Entities
+
+```
+User
+ ├── Creates Events
+ ├── Joins Communities
+ └── Attends Events
+
+Community
+ ├── Hosts Events
+ └── Manages Members
+
+Event
+ ├── Has Attendees
+ └── Belongs to Community (optional)
+```
+
+---
 
 ## Tech Stack
 
-- Next.js App Router
+### Frontend
+
+- Next.js (App Router)
 - React 18
 - TypeScript
 - Tailwind CSS
-- Zustand for client state
-- Supabase for auth and data access
-- Leaflet and clustering for map-based discovery
-- Netlify deployment support
 
-## Getting Started
+### Backend
 
-1. Install dependencies.
+- Supabase
+- PostgreSQL
+- Realtime Subscriptions
 
-   ```bash
-   npm install
-   ```
+### Infrastructure
 
-2. Create a local environment file from the template below.
+- Progressive Web App (PWA)
+- Geospatial Search (Leaflet + clustering)
+- Authentication & Authorization
 
-3. Run the development server.
+### AI
 
-   ```bash
-   npm run dev
-   ```
+- Azure OpenAI integration for AI-powered event generation workflows
 
-4. Open the app in your browser and sign in with Supabase-authenticated credentials.
+---
 
 ## Environment Variables
 
-Copy the values below into `.env.local` before running the app:
+Copy the values below into `.env.local` (use `.env.example` as a template). Keep server-side keys secret and never expose them to the browser.
 
-```bash
+```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
@@ -61,57 +178,87 @@ AZURE_OPENAI_KEY=
 AZURE_OPENAI_DEPLOYMENT_ID=
 ```
 
-- **`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`**: Supabase project URL and anon key used for client auth and requests.
-- **`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`**: Optional — used for embedded Google Maps preview on event detail pages.
-- **`SUPABASE_SERVICE_ROLE_KEY`**: Required for certain server-side operations and migrations. Keep secret and never expose to the client.
-- **Azure OpenAI keys** (`AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT_ID`): Used by the AI event generation API. These are server-side credentials — do not expose in the browser.
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase project URL and anon key used for client auth and requests.
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`: Optional — used for embedded Google Maps preview on event detail pages.
+- `SUPABASE_SERVICE_ROLE_KEY`: Required for certain server-side operations and migrations. Keep secret and never expose to the client.
+- Azure OpenAI keys (`AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT_ID`): Used by the AI event generation API. These are server-side credentials — do not expose in the browser.
 
-## Available Scripts
+---
 
-- `npm run dev` - start the development server
-- `npm run build` - create a production build
-- `npm run start` - run the production server
-- `npm run lint` - run Next.js linting
+## Installation
 
-## Project Structure
+1. Clone the repository and install dependencies:
 
-- `app/` - routes, layouts, and page-level UI
-- `components/` - reusable UI, map, and layout components
-- `store/` - Zustand state for auth and events
-- `utils/` - Supabase client and shared helpers
-- `types/` - shared TypeScript types
-- `public/` - static assets, including Leaflet and Lottie files
+```bash
+git clone https://github.com/yourusername/bonfire.git
+cd bonfire
+npm install
+```
 
-## Domain Model
+2. Create `.env.local` from `.env.example` and fill in the values.
 
-The product context for this repo is based on:
+3. Run the development server:
 
-- User
-- Community
-- Event
-- CommunityMembership
-- EventAttendance
+```bash
+npm run dev
+```
 
-That model supports nearby discovery, recurring community participation, and event attendance workflows.
+Open `http://localhost:3000` in your browser. The app requires a Supabase project for auth/data; see `lib/supabase.ts` for the client setup.
 
-## Notes
+---
 
-- Supabase auth is initialized on app load.
-- The home experience is map-first and location-aware.
-- Event pages include map-centric details and check-in flows.
+## Database Design
 
-## Key Features (recent)
+Key models:
 
-- AI-powered event generator: create event drafts using natural language prompts via the `/api/ai` endpoint and the `components/organizer/ai-event-generator` UI.
-- Organizer improvements: organizer profile modal, private event controls and invite flow enhancements for private events.
-- Calendar view and map side menu: new calendar page and a contextual map side menu for improved discovery.
-- PWA and manifest updates: site.webmanifest added and PWA metadata wired into the app layout for offline and installable behavior.
-- Landing and legal pages: merged marketing landing into the main app with footer links and legal pages (privacy, terms).
-- Mobile & UI improvements: responsive fixes, updated icons, social sharing icons, and event details mobile layout fixes.
+```
+Users
+Communities
+Community Memberships
+Events
+Event Attendees
+```
+
+Relationships:
+
+```
+User
+ ├── joins Community
+ ├── creates Event
+ └── attends Event
+
+Community
+ └── hosts Events
+```
+
+---
+
+## Scalability Considerations
+
+- Geospatial indexing
+- Efficient radius-based queries
+- Pagination support
+- Real-time subscriptions
+- Community-centric architecture
+- Extensible recommendation system
+
+---
+
+## Future Roadmap
+
+- Personalized event recommendations
+- Interest-based discovery
+- Community feeds
+- Event chat
+- Trust & verification systems
+- Community analytics
+- Advanced moderation tools
+
+---
 
 ## Changelog
 
-- 0.1.0 (Initial)
+- 0.1.0 (2026-06-03)
   - Initial project scaffold and core features: map discovery, event pages, auth, and organizer flows.
 
 - Unreleased / 2026-06-02
@@ -122,7 +269,20 @@ That model supports nearby discovery, recurring community participation, and eve
   - PWA manifest and icon updates; improved mobile responsiveness and multiple UI fixes.
   - `.env.example` updated with Azure OpenAI and Supabase service role vars.
 
-## Changelog
+---
 
-- 0.1.0 (2026-06-03)
-  - Initial project scaffold and core features: map discovery, event pages, auth, and organizer flows.
+## Why Bonfire?
+
+Most platforms optimize for screen time. Bonfire optimizes for real-world interactions. The goal is simple:
+
+**Help people discover communities, attend events, and build meaningful connections offline.**
+
+---
+
+## Author
+
+**Abhay Pratap Choudhary**
+
+IIT Roorkee
+Building products at the intersection of AI, communities, and real-world experiences.
+
