@@ -50,10 +50,10 @@ The platform is designed around one core idea:
 
 ### Communities
 
-| Community Discovery                                                                         | Community Page                                                                    |
-| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Community Discovery                                                                                                                                                                     | Community Page                                                                                                                                                                |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <img src="./screenshots/community-discovery.jpeg" alt="Community Discovery" style="width:100%;max-width:520px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> | <img src="./screenshots/community-page.jpeg" alt="Community Page" style="width:100%;max-width:520px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> |
-| Browse and discover communities.                                                            | Engage with members and community-hosted events.                                  |
+| Browse and discover communities.                                                                                                                                                        | Engage with members and community-hosted events.                                                                                                                              |
 
 ### Event Experience
 
@@ -68,10 +68,10 @@ The platform is designed around one core idea:
 
 Bonfire supports multiple discovery modes optimized for mobile users.
 
-| List View                                                                                          | Map View                                                                                         |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| List View                                                                                                                                                                                      | Map View                                                                                                                                                                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <img src="./screenshots/mobile-discover-list.jpeg" alt="Mobile discover list view" style="width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> | <img src="./screenshots/mobile-discover-map.jpeg" alt="Mobile discover map view" style="width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> |
-| List View                                                                                          | Map View                                                                                         |
+| List View                                                                                                                                                                                      | Map View                                                                                                                                                                                     |
 
 ---
 
