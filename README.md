@@ -8,6 +8,17 @@ Bonfire is a location-first platform that helps people discover, create, and joi
 
 **Live Demo:** https://bonfire-web.netlify.app/
 
+**Full Product Walkthrough:** https://drive.google.com/file/d/132wKiDGCnPW9IJ_7oO6qSFyvqcjJatBh/view?usp=sharing
+
+<p align="center">
+  <img src="./screenshots/hero-desktop-discover.png" alt="Bonfire hero screenshot" width="100%" />
+</p>
+
+<p align="center">
+  <a href="https://bonfire-web.netlify.app/">Live Demo</a> ·
+  <a href="https://drive.google.com/file/d/132wKiDGCnPW9IJ_7oO6qSFyvqcjJatBh/view?usp=sharing">Full Product Walkthrough</a>
+</p>
+
 ---
 
 ## Overview
@@ -27,6 +38,42 @@ Bonfire solves this by providing:
 The platform is designed around one core idea:
 
 > Location should matter more than follower count.
+
+---
+
+## Screenshots
+
+### AI Event Creation
+
+<p align="center">
+  <img src="./screenshots/ai-event-creation.gif" alt="AI event creation demo" width="100%" />
+</p>
+
+*Generate complete event details from natural language prompts in a few seconds.*
+
+### Communities
+
+| Community Discovery | Community Page |
+| --- | --- |
+| <img src="./screenshots/community-discovery.jpeg" alt="Community Discovery" width="100%" /> | <img src="./screenshots/community-page.jpeg" alt="Community Page" width="100%" /> |
+| Browse and discover communities. | Engage with members and community-hosted events. |
+
+### Event Experience
+
+<p align="center">
+  <img src="./screenshots/event-details.jpeg" alt="Event details view" width="100%" />
+</p>
+
+*Event details, attendance, location, and participation are presented in one clear view.*
+
+### Mobile Experience
+
+Bonfire supports multiple discovery modes optimized for mobile users.
+
+| List View | Map View |
+| --- | --- |
+| <img src="./screenshots/mobile-discover-list.jpeg" alt="Mobile discover list view" width="100%" /> | <img src="./screenshots/mobile-discover-map.jpeg" alt="Mobile discover map view" width="100%" /> |
+| List View | Map View |
 
 ---
 
