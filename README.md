@@ -47,7 +47,7 @@ The platform is designed around one core idea:
   </a>
 </p>
 
-*Generate complete event details from natural language prompts in a few seconds. (Click to open full animation)*
+_Generate complete event details from natural language prompts in a few seconds. (Click to open full animation)_
 
 ### Visual Gallery
 
