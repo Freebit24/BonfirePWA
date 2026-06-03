@@ -12,7 +12,7 @@ Bonfire is a location-first platform that helps people discover, create, and joi
 
 <p align="center">
   <a href="https://bonfire-web.netlify.app/">Live Demo</a> ·
-  <a href="https://drive.google.com/file/d/132wKiDGCnPW9IJ_7oO6qSFyvqcjJatBh/view?usp=sharing">Full Product Walkthrough</a>
+  <a href="https://drive.google.com/file/d/1oRPlJzMZV7hzwKcRBXobcDf0BJj3_oa7/view?usp=sharing">Full Product Walkthrough</a>
 </p>
 
 ---
@@ -41,37 +41,73 @@ The platform is designed around one core idea:
 
 ### AI Event Creation
 
-<div align="center">
-  <figure style="max-width:720px;margin:0 auto;">
-    <img src="./screenshots/ai-event-creation.gif" alt="AI event creation demo" style="width:100%;height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.10);"/>
-    <figcaption style="font-size:0.95rem;margin-top:8px;color:#666;">Generate complete event details from natural language prompts in a few seconds.</figcaption>
-  </figure>
-</div>
+<p align="center">
+  <a href="./screenshots/ai-event-creation.gif" target="_blank" rel="noopener">
+    <img src="./screenshots/ai-event-creation.gif" alt="AI event creation demo" width="280" />
+  </a>
+</p>
+
+*Generate complete event details from natural language prompts in a few seconds. (Click to open full animation)*
+
+### Visual Gallery
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="./screenshots/community-discovery.jpeg" target="_blank" rel="noopener">
+        <img src="./screenshots/community-discovery.jpeg" alt="Community Discovery" width="240" />
+      </a>
+      <br />Community Discovery
+    </td>
+    <td align="center">
+      <a href="./screenshots/community-page.jpeg" target="_blank" rel="noopener">
+        <img src="./screenshots/community-page.jpeg" alt="Community Page" width="240" />
+      </a>
+      <br />Community Page
+    </td>
+    <td align="center">
+      <a href="./screenshots/event-details.jpeg" target="_blank" rel="noopener">
+        <img src="./screenshots/event-details.jpeg" alt="Event Details" width="240" />
+      </a>
+      <br />Event Details
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="./screenshots/mobile-discover-list.jpeg" target="_blank" rel="noopener">
+        <img src="./screenshots/mobile-discover-list.jpeg" alt="Mobile List View" width="240" />
+      </a>
+      <br />Mobile - List View
+    </td>
+    <td align="center">
+      <a href="./screenshots/mobile-discover-map.jpeg" target="_blank" rel="noopener">
+        <img src="./screenshots/mobile-discover-map.jpeg" alt="Mobile Map View" width="240" />
+      </a>
+      <br />Mobile - Map View
+    </td>
+    <td align="center">
+      <em>Open the full screenshots above for the complete experience.</em>
+    </td>
+  </tr>
+</table>
 
 ### Communities
 
-| Community Discovery                                                                                                                                                                     | Community Page                                                                                                                                                                |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <img src="./screenshots/community-discovery.jpeg" alt="Community Discovery" style="width:100%;max-width:520px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> | <img src="./screenshots/community-page.jpeg" alt="Community Page" style="width:100%;max-width:520px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> |
-| Browse and discover communities.                                                                                                                                                        | Engage with members and community-hosted events.                                                                                                                              |
+Browse and discover communities (see the Visual Gallery above for screenshots).
+
+- **Community Discovery:** Browse and discover communities nearby.
+- **Community Page:** Engage with members and host events within community pages.
 
 ### Event Experience
 
-<div align="center">
-  <figure style="max-width:780px;margin:0 auto;">
-    <img src="./screenshots/event-details.jpeg" alt="Event details view" style="width:100%;height:auto;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.12);" />
-    <figcaption style="font-size:0.95rem;margin-top:8px;color:#666;">Event details, attendance, location, and participation are presented in one clear view.</figcaption>
-  </figure>
-</div>
+Event details, attendance, location, and participation are presented in a single clear view — see the Visual Gallery for an expanded screenshot.
 
 ### Mobile Experience
 
-Bonfire supports multiple discovery modes optimized for mobile users.
+Bonfire supports multiple discovery modes optimized for mobile users — see the Visual Gallery for mobile screenshots.
 
-| List View                                                                                                                                                                                      | Map View                                                                                                                                                                                     |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <img src="./screenshots/mobile-discover-list.jpeg" alt="Mobile discover list view" style="width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> | <img src="./screenshots/mobile-discover-map.jpeg" alt="Mobile discover map view" style="width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> |
-| List View                                                                                                                                                                                      | Map View                                                                                                                                                                                     |
+- **List View:** Compact event list optimized for quick browsing on small screens.
+- **Map View:** Interactive map with clustered event markers for spatial discovery.
 
 ---
 
@@ -254,7 +290,7 @@ Open `http://localhost:3000` in your browser. The app requires a Supabase projec
 
 ## Database Design
 
-Key models:
+Browse and discover communities. See the Visual Gallery above for screenshots.
 
 ```
 Users
@@ -301,20 +337,7 @@ Community
 
 ---
 
-## Changelog
-
-- 0.1.0 (2026-06-03)
-  - Initial project scaffold and core features: map discovery, event pages, auth, and organizer flows.
-
-- Unreleased / 2026-06-02
-  - AI event creation feature: natural-language event generation and server-side API integration.
-  - Added calendar page and map side menu for improved discovery.
-  - Organizer UI: profile modal, private-event controls, invite flow fixes, and attendee count bug fixes.
-  - Landing page merged with the app, added legal pages, and Google site verification meta tag.
-  - PWA manifest and icon updates; improved mobile responsiveness and multiple UI fixes.
-  - `.env.example` updated with Azure OpenAI and Supabase service role vars.
-
----
+<!-- Changelog removed per request -->
 
 ## Why Bonfire?
 
@@ -329,4 +352,5 @@ Most platforms optimize for screen time. Bonfire optimizes for real-world intera
 **Abhay Pratap Choudhary**
 
 IIT Roorkee
+
 Building products at the intersection of AI, communities, and real-world experiences.
