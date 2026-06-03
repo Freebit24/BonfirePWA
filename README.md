@@ -6,12 +6,8 @@ Version: 0.1.0 — 2026-06-03
 
 Bonfire is a location-first platform that helps people discover, create, and join real-world events through communities. It replaces fragmented event discovery across messaging apps, social media, and offline channels with a unified experience designed for real-world coordination.
 
-**Live Demo:** https://bonfire-web.netlify.app/
-
-**Full Product Walkthrough:** https://drive.google.com/file/d/132wKiDGCnPW9IJ_7oO6qSFyvqcjJatBh/view?usp=sharing
-
 <p align="center">
-  <img src="./screenshots/hero-desktop-discover.png" alt="Bonfire hero screenshot" width="100%" />
+  <img src="./screenshots/hero-desktop-discover.png" alt="Bonfire hero screenshot" style="width:100%;max-width:1200px;height:auto;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.12);" />
 </p>
 
 <p align="center">
@@ -45,35 +41,37 @@ The platform is designed around one core idea:
 
 ### AI Event Creation
 
-<p align="center">
-  <img src="./screenshots/ai-event-creation.gif" alt="AI event creation demo" width="100%" />
-</p>
-
-*Generate complete event details from natural language prompts in a few seconds.*
+<div align="center">
+  <figure style="max-width:720px;margin:0 auto;">
+    <img src="./screenshots/ai-event-creation.gif" alt="AI event creation demo" style="width:100%;height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.10);"/>
+    <figcaption style="font-size:0.95rem;margin-top:8px;color:#666;">Generate complete event details from natural language prompts in a few seconds.</figcaption>
+  </figure>
+</div>
 
 ### Communities
 
-| Community Discovery | Community Page |
-| --- | --- |
-| <img src="./screenshots/community-discovery.jpeg" alt="Community Discovery" width="100%" /> | <img src="./screenshots/community-page.jpeg" alt="Community Page" width="100%" /> |
-| Browse and discover communities. | Engage with members and community-hosted events. |
+| Community Discovery                                                                         | Community Page                                                                    |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| <img src="./screenshots/community-discovery.jpeg" alt="Community Discovery" style="width:100%;max-width:520px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> | <img src="./screenshots/community-page.jpeg" alt="Community Page" style="width:100%;max-width:520px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> |
+| Browse and discover communities.                                                            | Engage with members and community-hosted events.                                  |
 
 ### Event Experience
 
-<p align="center">
-  <img src="./screenshots/event-details.jpeg" alt="Event details view" width="100%" />
-</p>
-
-*Event details, attendance, location, and participation are presented in one clear view.*
+<div align="center">
+  <figure style="max-width:780px;margin:0 auto;">
+    <img src="./screenshots/event-details.jpeg" alt="Event details view" style="width:100%;height:auto;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.12);" />
+    <figcaption style="font-size:0.95rem;margin-top:8px;color:#666;">Event details, attendance, location, and participation are presented in one clear view.</figcaption>
+  </figure>
+</div>
 
 ### Mobile Experience
 
 Bonfire supports multiple discovery modes optimized for mobile users.
 
-| List View | Map View |
-| --- | --- |
-| <img src="./screenshots/mobile-discover-list.jpeg" alt="Mobile discover list view" width="100%" /> | <img src="./screenshots/mobile-discover-map.jpeg" alt="Mobile discover map view" width="100%" /> |
-| List View | Map View |
+| List View                                                                                          | Map View                                                                                         |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| <img src="./screenshots/mobile-discover-list.jpeg" alt="Mobile discover list view" style="width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> | <img src="./screenshots/mobile-discover-map.jpeg" alt="Mobile discover map view" style="width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.08);" /> |
+| List View                                                                                          | Map View                                                                                         |
 
 ---
 
